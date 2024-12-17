@@ -32,7 +32,7 @@ def draw_pie_chart(file_path, interval=10):
 
 # 메인 실행 함수
 def main():
-    file_path = "C:\GitCode\CodeFolder\VisualProgramming\HW4\elec.xlsx"
+    file_path = r"C:\GitCode\CodeFolder\UNIV\VisualProgramming\HW4\elec.xlsx"
     draw_pie_chart(file_path)  # 그래프 실행
 
 if __name__ == "__main__":
