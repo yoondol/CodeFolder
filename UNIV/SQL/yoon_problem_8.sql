@@ -1,23 +1,30 @@
-SELECT E.Fname, E.Lname
-FROM EMPLOYEE E
-JOIN WORKS_ON W
-ON E.Ssn = W.Essn
-WHERE W.Pno = (
-    SELECT P.Pnumber
-    FROM PROJECT P
-    WHERE P.Pname = 'ProductX'
-) AND W.Hours > 10
+-- https://school.programmers.co.kr/learn/courses/30/lessons/131114
+-- 경기도에 위치한 식품창고 목록 출력하기
 
-SELECT E.Fname, E.Lname
-FROM EMPLOYEE AS E
-JOIN DEPENDENT DE
-ON E.Ssn = DE.Essn
-WHERE DE.Dependent_name = E.Fname
+SELECT WAREHOUSE_ID, WAREHOUSE_NAME, ADDRESS, IFNULL(FREEZER_YN, 'N')
+FROM FOOD_WAREHOUSE 
+WHERE ADDRESS LIKE '경기도%'
+ORDER BY WAREHOUSE_ID;
 
-SELECT E.Fname, E.Lname
-FROM EMPLOYEE AS E
-WHERE E.Super_ssn = (
-    SELECT S.ssn
-    FROM EMPLOYEE S
-    WHERE S.Fname = 'Franklin' AND S.Lname = 'Wong'
-)
+
+-- https://school.programmers.co.kr/learn/courses/30/lessons/59039
+-- 이름이 없는 동물의 아이디
+
+SELECT ANIMAL_ID
+FROM ANIMAL_INS
+WHERE NAME IS NULL;
+
+-- https://school.programmers.co.kr/learn/courses/30/lessons/59407
+-- 이름이 있는 동물의 아이디
+
+SELECT ANIMAL_ID
+FROM ANIMAL_INS
+WHERE NAME IS NOT NULL
+ORDER BY ANIMAL_ID;
+
+-- https://school.programmers.co.kr/learn/courses/30/lessons/59410
+-- NULL 처리하기
+
+SELECT ANIMAL_TYPE, COALESCE(NAME, 'No name'), SEX_UPON_INTAKE
+FROM ANIMAL_INS;
+
