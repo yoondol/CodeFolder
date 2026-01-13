@@ -63,3 +63,7 @@ def insert_raw(
             received_at,
         ),
     )
+
+# payload: dict
+# payload_json: serialized JSON string (single-encoded)
+# payload = json.loads(payload_json)  # dict

@@ -33,7 +33,8 @@ def _get_state(source):
 
 def _infer_sensor_no(device_name: str) -> int:
     # 예: L01_ENV_3 → 3, WAREHOUSE_ENV_2 → 2
-    return int(device_name.split("_")[-1])
+    raw = int(device_name.split("_")[-1])
+    return ((raw - 1) % 12) + 1
 
 def generate_env_payload(source, base_time: datetime | None = None):
     state = _get_state(source)

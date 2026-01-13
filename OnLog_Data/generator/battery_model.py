@@ -16,7 +16,7 @@ class BatteryState:
     def next(self):
         self.voltage -= self.DROP_PER_STEP
         if self.voltage <= 2520:
-                    self.voltage = random.uniform(2900, 3000)
+            self.voltage = random.uniform(2900, 3000)
         return int(self.voltage)
 
     def status(self):
