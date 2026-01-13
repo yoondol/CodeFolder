@@ -24,7 +24,9 @@ from sqlite_writer import init_db, insert_raw
 
 UTC = timezone.utc
 
-COMMIT_EVERY = 5000
+ENV_COMMIT_EVERY = 5000
+SCALE_COMMIT_EVERY = 5000
+MACHINE_COMMIT_EVERY = 5000
 
 
 def run():
@@ -44,7 +46,9 @@ def run():
 
         sources = build_all_sources(tenant_id)
 
-        row_count = 0
+        env_count = 0
+        scale_count = 0
+        machine_count = 0
 
         t = start_time
         while t < end_time:
@@ -66,14 +70,17 @@ def run():
                         payload=payload,
                         received_at=received_at,
                     )
-                    row_count += 1
+                    env_count += 1
+
+                    if env_count % ENV_COMMIT_EVERY == 0:
+                        env_db.commit()
 
                 # =========================
                 # SCALE
                 # =========================
                 elif source["device_type"].endswith("_SCALE"):
                     payload, received_at = generate_scale_payload(source, t)
-                    if payload:
+                    if payload is not None and received_at is not None:
                         insert_raw(
                             scale_db,
                             topic=TOPIC_SENSOR_SCALE,
@@ -85,7 +92,10 @@ def run():
                             payload=payload,
                             received_at=received_at,
                         )
-                        row_count += 1
+                        scale_count += 1
+
+                        if scale_count % SCALE_COMMIT_EVERY == 0:
+                            scale_db.commit()
 
                 # =========================
                 # MACHINE / POWER
@@ -103,13 +113,10 @@ def run():
                         payload=payload,
                         received_at=received_at,
                     )
-                    row_count += 1
+                    machine_count += 1
 
-                # 5,000 row마다 commit
-                if row_count % COMMIT_EVERY == 0:
-                    env_db.commit()
-                    scale_db.commit()
-                    machine_db.commit()
+                    if machine_count % MACHINE_COMMIT_EVERY == 0:
+                        machine_db.commit()
 
             t += step
 

@@ -55,11 +55,10 @@ def insert_raw(
             process,
             device_type,
             metric,
-            json.dumps(payload, ensure_ascii=False),
+            payload,
             received_at,
         ),
     )
 
-# payload: dict
-# payload_json: serialized JSON string (single-encoded)
-# payload = json.loads(payload_json)  # dict
+# Producer로 넘길 때
+# producer.send(topic, value=json.dumps(row["payload"]))
