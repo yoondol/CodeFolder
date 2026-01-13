@@ -1,35 +1,62 @@
 # generator/env_generator.py
 
 import uuid
-import json
 import random
+from datetime import datetime, timezone
+
 from sensor_state import SensorState
+from env_model import generate_env_value
+from battery_model import BatteryState
+from lora_payload import encode_payload
 from time_utils import generate_times, dr_to_sf
 
-# 주파수 풀 (8개)
 FREQUENCIES = [
     921700000,
     922100000, 922300000, 922500000,
     922700000, 922900000, 923100000, 923300000,
 ]
 
-# 센서 상태 캐시
-SENSOR_STATES = {}
+STATES = {}
 
+def _sensor_key(source):
+    return f"{source['tenant_id']}|{source['device_name']}"
 
 def _get_state(source):
-    key = f"{source['tenant_id']}|{source['device_name']}"
-    if key not in SENSOR_STATES:
-        SENSOR_STATES[key] = SensorState(key)
-    return SENSOR_STATES[key]
+    key = _sensor_key(source)
+    if key not in STATES:
+        STATES[key] = {
+            "radio": SensorState(key),
+            "battery": BatteryState(),
+            "env": None
+        }
+    return STATES[key]
 
+def _infer_sensor_no(device_name: str) -> int:
+    # 예: L01_ENV_3 → 3, WAREHOUSE_ENV_2 → 2
+    return int(device_name.split("_")[-1])
 
-def generate_env_payload(source):
+def generate_env_payload(source, base_time: datetime | None = None):
     state = _get_state(source)
 
-    time, gw_time, ns_time, received_at = generate_times()
+    if base_time is None:
+        base_time = datetime.now(timezone.utc)
 
-    dr = state.next_dr()
+    sensor_no = _infer_sensor_no(source["device_name"])
+
+    # ===== 환경 값 생성 =====
+    temp, hum = generate_env_value(sensor_no, base_time, state["env"])
+    state["env"] = {"temp": temp, "hum": hum}
+
+    # ===== 배터리 =====
+    voltage = state["battery"].next()
+    bat_status = state["battery"].status()
+
+    # ===== LoRa payload =====
+    data_b64 = encode_payload(bat_status, voltage, temp, hum)
+
+    # ===== Time & Radio =====
+    time, gw_time, ns_time, received_at = generate_times()
+    dr = state["radio"].next_dr()
     sf = dr_to_sf(dr)
 
     payload = {
@@ -40,26 +67,23 @@ def generate_env_payload(source):
             "applicationName": "EF-SmartFactory",
             "deviceProfileName": "LHT65N-KR920",
             "deviceName": source["device_name"],
-            "devEui": state.dev_eui,
-            "deviceClassEnabled": "CLASS_A",
-            "tags": {}
+            "devEui": state["radio"].dev_eui,
+            "deviceClassEnabled": "CLASS_A"
         },
         "adr": True,
         "dr": dr,
-        "fCnt": state.next_fcnt(),
+        "fCnt": state["radio"].next_fcnt(),
         "fPort": 2,
         "confirmed": False,
-        "data": "AAAA",  # payload 자체는 의미 없음
-        "rxInfo": [
-            {
-                "gatewayId": "gw-ef-01",
-                "gwTime": gw_time,
-                "nsTime": ns_time,
-                "rssi": state.next_rssi(),
-                "snr": state.next_snr(),
-                "crcStatus": "CRC_OK"
-            }
-        ],
+        "data": data_b64,
+        "rxInfo": [{
+            "gatewayId": "gw-ef-01",
+            "gwTime": gw_time,
+            "nsTime": ns_time,
+            "rssi": state["radio"].next_rssi(),
+            "snr": state["radio"].next_snr(),
+            "crcStatus": "CRC_OK"
+        }],
         "txInfo": {
             "frequency": random.choice(FREQUENCIES),
             "modulation": {
@@ -70,11 +94,7 @@ def generate_env_payload(source):
                 }
             }
         },
-        "regionConfigId": "kr920",
-        "values": {
-            "temperature": round(random.uniform(18, 28), 2),
-            "humidity": round(random.uniform(30, 70), 2)
-        }
+        "regionConfigId": "kr920"
     }
 
     return payload, received_at
