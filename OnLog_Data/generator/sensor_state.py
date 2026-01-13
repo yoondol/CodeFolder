@@ -2,13 +2,15 @@
 
 import random
 import uuid
+import hashlib
 
 class SensorState:
     def __init__(self, key):
         self.key = key
 
         # 고유 식별자
-        self.dev_eui = uuid.uuid4().hex[:16]
+        # self.dev_eui = uuid.uuid4().hex[:16]
+        self.dev_eui = hashlib.md5(key.encode()).hexdigest()[:16]
 
         # DR 거의 고정
         self.dr = random.choice([0, 1, 2, 3, 4, 5])

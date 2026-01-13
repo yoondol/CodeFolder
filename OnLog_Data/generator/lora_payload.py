@@ -7,7 +7,7 @@ EXT_BYTES = bytes.fromhex("01 7f ff 7f ff")
 
 
 def encode_payload(bat_status, voltage_mv, temperature, humidity):
-    bat_raw = (bat_status << 14) | voltage_mv
+    bat_raw = ((bat_status & 0b11) << 14) | (voltage_mv & 0x3FFF)
     bat_bytes = bat_raw.to_bytes(2, "big")
 
     temp_raw = int(round(temperature * 100))

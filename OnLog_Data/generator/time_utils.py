@@ -3,13 +3,13 @@
 from datetime import datetime, timezone, timedelta
 import random
 
-def generate_times():
+def generate_times(base_time: datetime):
     """
     returns:
       time, gwTime, nsTime, received_at (ISO8601 with ns)
     """
 
-    base = datetime.now(timezone.utc)
+    base = base_time
 
     # gwTime - time: 0 ~ 수십 µs
     gw_time = base + timedelta(microseconds=random.randint(0, 50))
