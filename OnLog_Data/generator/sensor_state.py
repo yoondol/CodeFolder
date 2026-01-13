@@ -4,8 +4,8 @@ import random
 import uuid
 
 class SensorState:
-    def __init__(self, sensor_key):
-        self.sensor_key = sensor_key
+    def __init__(self, key):
+        self.key = key
 
         # 고유 식별자
         self.dev_eui = uuid.uuid4().hex[:16]
