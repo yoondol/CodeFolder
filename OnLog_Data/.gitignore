@@ -4,3 +4,8 @@
 __pycache__/
 *.sqlite-shm
 *.sqlite-wal
+# tmux logs 
+tmux-client-*.log 
+tmux-server-*.log 
+# generated data 
+data/
