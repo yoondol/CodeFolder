@@ -31,7 +31,7 @@ def _get_state(source):
     if key not in SENSOR_STATES:
         SENSOR_STATES[key] = {
             "radio": SensorState(key),
-            "last_event_time": None,
+            "last_event_time": {},
             "was_in_production": False
         }
     return SENSOR_STATES[key]
@@ -129,7 +129,7 @@ def generate_scale_payload(source, base_time, time_ctx):
             "tenantName": source["tenant_id"],
             "applicationName": "EF-Scale",
             "deviceProfileName": source["device_type"],
-            "deviceName": source["device_name"],
+            "deviceName": f"{source['tenant_id']}_{source['device_name']}",
             "devEui": radio.dev_eui,
         },
         "adr": True,

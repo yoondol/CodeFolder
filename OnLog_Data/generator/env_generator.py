@@ -71,7 +71,7 @@ def generate_env_payload(source, base_time, time_ctx):
             "tenantName": source["tenant_id"],
             "applicationName": "EF-SmartFactory",
             "deviceProfileName": "LHT65N-KR920",
-            "deviceName": source["device_name"],
+            "deviceName": f"{source['tenant_id']}_{source['device_name']}",
             "devEui": state["radio"].dev_eui,
             "deviceClassEnabled": "CLASS_A"
         },

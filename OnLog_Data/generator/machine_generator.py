@@ -74,7 +74,10 @@ def generate_machine_payload(source, base_time, time_ctx):
     # OIL_TEMP
     # =========================
     elif metric == "OIL_TEMP":
-        base = state["value"] or 165.0
+        if state["value"] is None:
+            base = 165.0
+        else:
+            base = state["value"]
         value = round(base + random.uniform(-0.3, 0.3), 1)
         state["value"] = value
 
@@ -82,7 +85,10 @@ def generate_machine_payload(source, base_time, time_ctx):
     # ACID_VALUE
     # =========================
     elif metric == "ACID_VALUE":
-        base = state["value"] or 0.9
+        if state["value"] is None:
+            base = 0.9
+        else:
+            base = state["value"]
         base += random.uniform(0.0005, 0.002)
         if base >= 2.0:
             base = 0.9
@@ -93,7 +99,10 @@ def generate_machine_payload(source, base_time, time_ctx):
     # COATER TEMP
     # =========================
     elif metric == "TEMP" and source["process"] == "COAT":
-        base = state["value"] or 70.0
+        if state["value"] is None:
+            base = 70.0
+        else:
+            base = state["value"]
         value = round(base + random.uniform(-0.2, 0.2), 1)
         state["value"] = value
 
@@ -101,7 +110,10 @@ def generate_machine_payload(source, base_time, time_ctx):
     # BRIX
     # =========================
     elif metric == "BRIX":
-        base = state["value"] or 75.0
+        if state["value"] is None:
+            base = 75.0
+        else:
+            base = state["value"]
         value = round(base + random.uniform(-0.5, 0.5), 1)
         state["value"] = value
 
@@ -109,7 +121,10 @@ def generate_machine_payload(source, base_time, time_ctx):
     # COOLER TEMP
     # =========================
     elif metric == "TEMP" and source["process"] == "COOL":
-        base = state["value"] or 20.0
+        if state["value"] is None:
+            base = 20.0
+        else:
+            base = state["value"]
         value = round(base + random.uniform(-0.3, 0.3), 1)
         state["value"] = value
 
@@ -131,7 +146,10 @@ def generate_machine_payload(source, base_time, time_ctx):
     # DRY HUMIDITY
     # =========================
     elif metric == "HUMIDITY":
-        base = state["value"] or random.uniform(25, 38)
+        if state["value"] is None:
+            base = random.uniform(25, 38)
+        else:
+            base = state["value"]
         value = round(min(38, max(25, base + random.uniform(-0.3, 0.3))), 1)
         state["value"] = value
 
@@ -147,7 +165,10 @@ def generate_machine_payload(source, base_time, time_ctx):
     # ENERGY_TOTAL (누적)
     # =========================
     elif metric == "ENERGY_TOTAL":
-        base = state["value"] or 5000.0
+        if state["value"] is None:
+            base = 5000.0
+        else:
+            base = state["value"]
         base += 3 / 360  # 10초 기준 증가량
         value = round(base, 2)
         state["value"] = value
@@ -158,7 +179,7 @@ def generate_machine_payload(source, base_time, time_ctx):
         "device": {
             "tenantName": source["tenant_id"],
             "deviceType": source["device_type"],
-            "deviceName": source["device_name"]
+            "deviceName": f"{source['tenant_id']}_{source['device_name']}"
         },
         "metric": metric,
         "value": value,
