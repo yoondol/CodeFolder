@@ -11,7 +11,7 @@ LINES = [f"L{i:02d}" for i in range(1, 5)]  # N = 4
 # =========================
 INTERVAL_SEC = 10
 START_TIME = "2025-07-01T00:00:00Z"
-YEARS = 0.03
+YEARS = 0.01
 
 # =========================
 # SQLite layout
