@@ -67,6 +67,8 @@ def generate_env_payload(source, base_time, time_ctx):
     payload = {
         "deduplicationId": str(uuid.uuid4()),
         "time": time,
+        "temp": temp,
+        "hum": hum,
         "deviceInfo": {
             "tenantName": source["tenant_id"],
             "applicationName": "EF-SmartFactory",
