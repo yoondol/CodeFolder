@@ -66,6 +66,7 @@ def generate_machine_payload(source, base_time: datetime | None = None):
     # METAL_DETECTED (순간)
     # =========================
     elif metric == "METAL_DETECTED":
+        value = None
         value_bool = random.random() < 0.001
 
     # =========================

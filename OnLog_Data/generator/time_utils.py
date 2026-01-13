@@ -3,7 +3,10 @@
 from datetime import datetime, timezone, timedelta
 import random
 
-def generate_times(base_time: datetime):
+def generate_times(base_time: datetime | None = None):
+    if base_time is None:
+        base_time = datetime.now(timezone.utc)
+        
     """
     returns:
       time, gwTime, nsTime, received_at (ISO8601 with ns)
