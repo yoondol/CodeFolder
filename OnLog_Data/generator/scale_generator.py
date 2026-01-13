@@ -1,11 +1,24 @@
 # generator/scale_generator.py
 
 import uuid
-import json
 import random
 from sensor_state import SensorState
 from time_utils import generate_times, dr_to_sf
-from env_generator import FREQUENCIES, _get_state
+
+FREQUENCIES = [
+    921700000,
+    922100000, 922300000, 922500000,
+    922700000, 922900000, 923100000, 923300000,
+]
+
+# scale 전용 상태 캐시
+SENSOR_STATES = {}
+
+def _get_state(source):
+    key = f"{source['tenant_id']}|{source['device_name']}"
+    if key not in SENSOR_STATES:
+        SENSOR_STATES[key] = SensorState(key)
+    return SENSOR_STATES[key]
 
 
 def generate_scale_payload(source):
