@@ -1,4 +1,4 @@
-# generator/sqlite_write.py
+# generator/sqlite_writer.py
 
 import sqlite3
 import json
