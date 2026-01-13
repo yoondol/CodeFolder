@@ -2,6 +2,10 @@
 
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import json
+from tqdm import tqdm
+import orjson
+from time_utils import generate_times
 
 from config import (
     TENANTS,
@@ -20,13 +24,24 @@ from meta import build_all_sources
 from env_generator import generate_env_payload
 from scale_generator import generate_scale_payload
 from machine_generator import generate_machine_payload
-from sqlite_writer import init_db, insert_raw
+from sqlite_writer import init_db
 
 UTC = timezone.utc
 
-ENV_COMMIT_EVERY = 5000
-SCALE_COMMIT_EVERY = 5000
-MACHINE_COMMIT_EVERY = 5000
+BATCH_SIZE = 1000
+
+INSERT_SQL = """
+INSERT INTO raw_logs (
+    topic,
+    tenant_id,
+    line_id,
+    process,
+    device_type,
+    metric,
+    payload,
+    received_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+"""
 
 
 def run():
@@ -44,86 +59,112 @@ def run():
         scale_db = init_db(db_root / f"{tenant_id}_{DB_SENSOR_SCALE}")
         machine_db = init_db(db_root / f"{tenant_id}_{DB_MACHINE}")
 
+        env_cur = env_db.cursor()
+        scale_cur = scale_db.cursor()
+        machine_cur = machine_db.cursor()
+
+        env_buf = []
+        scale_buf = []
+        machine_buf = []
+
         sources = build_all_sources(tenant_id)
 
-        env_count = 0
-        scale_count = 0
-        machine_count = 0
+        total_steps = int((end_time - start_time).total_seconds() / INTERVAL_SEC)
 
         t = start_time
-        while t < end_time:
-            for source in sources:
 
-                # =========================
-                # ENV
-                # =========================
-                if source["process"] == "ENV":
-                    payload, received_at = generate_env_payload(source, t)
-                    insert_raw(
-                        env_db,
-                        topic=TOPIC_SENSOR_ENV,
-                        tenant_id=source["tenant_id"],
-                        line_id=source["line_id"],
-                        process=source["process"],
-                        device_type=source["device_type"],
-                        metric="ENV",
-                        payload=payload,
-                        received_at=received_at,
-                    )
-                    env_count += 1
+        with tqdm(total=total_steps, desc=f"Generating {tenant_id}", unit="step") as pbar:
+            while t < end_time:
+                time_iso, gw_time, ns_time, received_at = generate_times(t)
 
-                    if env_count % ENV_COMMIT_EVERY == 0:
-                        env_db.commit()
+                time_ctx = {
+                    "time": time_iso,
+                    "gw_time": gw_time,
+                    "ns_time": ns_time,
+                    "received_at": received_at,
+                }
 
-                # =========================
-                # SCALE
-                # =========================
-                elif source["device_type"].endswith("_SCALE"):
-                    payload, received_at = generate_scale_payload(source, t)
-                    if payload is not None and received_at is not None:
-                        insert_raw(
-                            scale_db,
-                            topic=TOPIC_SENSOR_SCALE,
-                            tenant_id=source["tenant_id"],
-                            line_id=source["line_id"],
-                            process=source["process"],
-                            device_type=source["device_type"],
-                            metric="WEIGHT",
-                            payload=payload,
-                            received_at=received_at,
-                        )
-                        scale_count += 1
+                for source in sources:
 
-                        if scale_count % SCALE_COMMIT_EVERY == 0:
-                            scale_db.commit()
+                    # =========================
+                    # ENV
+                    # =========================
+                    if source["process"] == "ENV":
+                        payload, received_at = generate_env_payload(source, t, time_ctx)
+                        env_buf.append((
+                            TOPIC_SENSOR_ENV,
+                            source["tenant_id"],
+                            source["line_id"],
+                            source["process"],
+                            source["device_type"],
+                            "ENV",
+                            orjson.dumps(payload).decode(),
+                            received_at,
+                        ))
 
-                # =========================
-                # MACHINE / POWER
-                # =========================
-                else:
-                    payload, received_at = generate_machine_payload(source, t)
-                    insert_raw(
-                        machine_db,
-                        topic=TOPIC_MACHINE,
-                        tenant_id=source["tenant_id"],
-                        line_id=source["line_id"],
-                        process=source["process"],
-                        device_type=source["device_type"],
-                        metric=source["metric"],
-                        payload=payload,
-                        received_at=received_at,
-                    )
-                    machine_count += 1
+                        if len(env_buf) >= BATCH_SIZE:
+                            env_cur.executemany(INSERT_SQL, env_buf)
+                            env_db.commit()
+                            env_buf.clear()
 
-                    if machine_count % MACHINE_COMMIT_EVERY == 0:
-                        machine_db.commit()
+                    # =========================
+                    # SCALE
+                    # =========================
+                    elif source["device_type"].endswith("_SCALE"):
+                        payload, received_at = generate_scale_payload(source, t, time_ctx)
+                        if payload is not None:
+                            scale_buf.append((
+                                TOPIC_SENSOR_SCALE,
+                                source["tenant_id"],
+                                source["line_id"],
+                                source["process"],
+                                source["device_type"],
+                                "WEIGHT",
+                                orjson.dumps(payload).decode(),
+                                received_at,
+                            ))
 
-            t += step
+                            if len(scale_buf) >= BATCH_SIZE:
+                                scale_cur.executemany(INSERT_SQL, scale_buf)
+                                scale_db.commit()
+                                scale_buf.clear()
 
-        # 마지막 잔여 commit
-        env_db.commit()
-        scale_db.commit()
-        machine_db.commit()
+                    # =========================
+                    # MACHINE
+                    # =========================
+                    else:
+                        payload, received_at = generate_machine_payload(source, t, time_ctx)
+                        machine_buf.append((
+                            TOPIC_MACHINE,
+                            source["tenant_id"],
+                            source["line_id"],
+                            source["process"],
+                            source["device_type"],
+                            source["metric"],
+                            orjson.dumps(payload).decode(),
+                            received_at,
+                        ))
+
+                        if len(machine_buf) >= BATCH_SIZE:
+                            machine_cur.executemany(INSERT_SQL, machine_buf)
+                            machine_db.commit()
+                            machine_buf.clear()
+
+                t += step
+                pbar.update(1)
+
+        # ===== flush remaining =====
+        if env_buf:
+            env_cur.executemany(INSERT_SQL, env_buf)
+            env_db.commit()
+
+        if scale_buf:
+            scale_cur.executemany(INSERT_SQL, scale_buf)
+            scale_db.commit()
+
+        if machine_buf:
+            machine_cur.executemany(INSERT_SQL, machine_buf)
+            machine_db.commit()
 
         env_db.close()
         scale_db.close()
