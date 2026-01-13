@@ -21,7 +21,7 @@ def _get_state(source):
     return SENSOR_STATES[key]
 
 
-def generate_machine_payload(source, base_time: datetime | None = None):
+def generate_machine_payload(source, base_time, time_ctx):
     if base_time is None:
         base_time = datetime.now(timezone.utc)
 
@@ -31,7 +31,8 @@ def generate_machine_payload(source, base_time: datetime | None = None):
     radio = state["radio"]
     metric = source["metric"]
 
-    time, _, _, received_at = generate_times(base_time)
+    time = time_ctx["time"]
+    received_at = time_ctx["received_at"]
 
     value = None
     value_bool = None

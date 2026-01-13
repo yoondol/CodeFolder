@@ -31,7 +31,8 @@ def _get_state(source):
     if key not in SENSOR_STATES:
         SENSOR_STATES[key] = {
             "radio": SensorState(key),
-            "last_event_time": None
+            "last_event_time": None,
+            "was_in_production": False
         }
     return SENSOR_STATES[key]
 
@@ -40,7 +41,7 @@ def _in_production_time(now_kst: datetime) -> bool:
     return 8 <= now_kst.hour < 21
 
 
-def generate_scale_payload(source, base_time: datetime | None = None):
+def generate_scale_payload(source, base_time, time_ctx):
     """
     base_time: UTC datetime (외부에서 주입 가능)
     """
@@ -49,41 +50,57 @@ def generate_scale_payload(source, base_time: datetime | None = None):
 
     now_kst = base_time.astimezone(KST)
 
-    # 생산 시간 아니면 데이터 생성 안 함
-    if not _in_production_time(now_kst):
-        return None, None
-
     state = _get_state(source)
     radio = state["radio"]
 
-    time, gw_time, ns_time, received_at = generate_times(base_time)
+    # ===== Time (외부에서 주입) =====
+    time = time_ctx["time"]
+    gw_time = time_ctx["gw_time"]
+    ns_time = time_ctx["ns_time"]
+    received_at = time_ctx["received_at"]
+    
+
     dr = radio.next_dr()
     sf = dr_to_sf(dr)
 
     metric = source["device_type"]
     weight = 0.0
 
+    in_prod = _in_production_time(now_kst)
+
+    # === production 시작 감지 ===
+    if in_prod and not state["was_in_production"]:
+        # 하루 새 사이클 시작
+        state["last_event_time"] = None
+
+    state["was_in_production"] = in_prod
+
     # =========================
     # UNIT_SCALE (1pc)
     # =========================
     if metric == "UNIT_SCALE":
-        # 로스율 2~3%
-        if random.random() < 0.025:
-            if random.random() < 0.5:
-                weight = round(random.uniform(12.0, 12.8), 2)
+        if in_prod:
+            if random.random() < 0.025:
+                if random.random() < 0.5:
+                    weight = round(random.uniform(12.0, 12.8), 2)
+                else:
+                    weight = round(random.uniform(15.2, 16.0), 2)
             else:
-                weight = round(random.uniform(15.2, 16.0), 2)
+                weight = round(random.uniform(13.0, 15.0), 2)
         else:
-            weight = round(random.uniform(13.0, 15.0), 2)
+            weight = 0.0
 
     # =========================
     # PACK_SCALE (완제품 통)
     # =========================
     elif metric == "PACK_SCALE":
-        last = state["last_event_time"]
-        if last is None or (now_kst - last).total_seconds() >= 90:
-            weight = round(random.uniform(125.0, 135.0), 1)
-            state["last_event_time"] = now_kst
+        if in_prod:
+            last = state["last_event_time"]
+            if last is None or (now_kst - last).total_seconds() >= 90:
+                weight = round(random.uniform(125.0, 135.0), 1)
+                state["last_event_time"] = now_kst
+            else:
+                weight = 0.0
         else:
             weight = 0.0
 
@@ -91,12 +108,16 @@ def generate_scale_payload(source, base_time: datetime | None = None):
     # DOUGH_SCALE (반죽)
     # =========================
     elif metric == "DOUGH_SCALE":
-        last = state["last_event_time"]
-        if last is None or (now_kst - last).total_seconds() >= 900:
-            weight = round(random.uniform(9800, 10200), 1)
-            state["last_event_time"] = now_kst
+        if in_prod:
+            last = state["last_event_time"]
+            if last is None or (now_kst - last).total_seconds() >= 900:
+                weight = round(random.uniform(9800, 10200), 1)
+                state["last_event_time"] = now_kst
+            else:
+                weight = 0.0
         else:
             weight = 0.0
+
 
     else:
         return None, None

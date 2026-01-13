@@ -36,7 +36,7 @@ def _infer_sensor_no(device_name: str) -> int:
     raw = int(device_name.split("_")[-1])
     return ((raw - 1) % 12) + 1
 
-def generate_env_payload(source, base_time: datetime | None = None):
+def generate_env_payload(source, base_time, time_ctx):
     state = _get_state(source)
 
     if base_time is None:
@@ -56,7 +56,11 @@ def generate_env_payload(source, base_time: datetime | None = None):
     data_b64 = encode_payload(bat_status, voltage, temp, hum)
 
     # ===== Time & Radio =====
-    time, gw_time, ns_time, received_at = generate_times(base_time)
+    time = time_ctx["time"]
+    gw_time = time_ctx["gw_time"]
+    ns_time = time_ctx["ns_time"]
+    received_at = time_ctx["received_at"]
+    
     dr = state["radio"].next_dr()
     sf = dr_to_sf(dr)
 
