@@ -26,3 +26,7 @@ def generate_times():
         ns_time.isoformat(),
         received_at.isoformat(),
     )
+
+def dr_to_sf(dr: int) -> int:
+    # DR 0 → SF12, DR 5 → SF7
+    return 12 - dr
