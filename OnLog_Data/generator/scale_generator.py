@@ -56,7 +56,7 @@ def generate_scale_payload(source, base_time: datetime | None = None):
     state = _get_state(source)
     radio = state["radio"]
 
-    time, gw_time, ns_time, received_at = generate_times()
+    time, gw_time, ns_time, received_at = generate_times(base_time)
     dr = radio.next_dr()
     sf = dr_to_sf(dr)
 

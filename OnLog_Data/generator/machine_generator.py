@@ -31,7 +31,7 @@ def generate_machine_payload(source, base_time: datetime | None = None):
     radio = state["radio"]
     metric = source["metric"]
 
-    time, _, _, received_at = generate_times()
+    time, _, _, received_at = generate_times(base_time)
 
     value = None
     value_bool = None

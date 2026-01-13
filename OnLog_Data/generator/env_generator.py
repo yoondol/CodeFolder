@@ -55,7 +55,7 @@ def generate_env_payload(source, base_time: datetime | None = None):
     data_b64 = encode_payload(bat_status, voltage, temp, hum)
 
     # ===== Time & Radio =====
-    time, gw_time, ns_time, received_at = generate_times()
+    time, gw_time, ns_time, received_at = generate_times(base_time)
     dr = state["radio"].next_dr()
     sf = dr_to_sf(dr)
 
