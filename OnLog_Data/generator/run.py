@@ -24,6 +24,8 @@ from sqlite_writer import init_db, insert_raw
 
 UTC = timezone.utc
 
+COMMIT_EVERY = 5000
+
 
 def run():
     start_time = datetime.fromisoformat(START_TIME.replace("Z", "+00:00"))
@@ -41,6 +43,8 @@ def run():
         machine_db = init_db(db_root / f"{tenant_id}_{DB_MACHINE}")
 
         sources = build_all_sources(tenant_id)
+
+        row_count = 0
 
         t = start_time
         while t < end_time:
@@ -62,6 +66,7 @@ def run():
                         payload=payload,
                         received_at=received_at,
                     )
+                    row_count += 1
 
                 # =========================
                 # SCALE
@@ -80,6 +85,7 @@ def run():
                             payload=payload,
                             received_at=received_at,
                         )
+                        row_count += 1
 
                 # =========================
                 # MACHINE / POWER
@@ -97,9 +103,17 @@ def run():
                         payload=payload,
                         received_at=received_at,
                     )
+                    row_count += 1
+
+                # 5,000 row마다 commit
+                if row_count % COMMIT_EVERY == 0:
+                    env_db.commit()
+                    scale_db.commit()
+                    machine_db.commit()
 
             t += step
 
+        # 마지막 잔여 commit
         env_db.commit()
         scale_db.commit()
         machine_db.commit()

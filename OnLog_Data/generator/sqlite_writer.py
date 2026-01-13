@@ -5,22 +5,18 @@ import json
 from pathlib import Path
 
 from schema import (
-    CREATE_RAW_LOGS_TABLE,
-    CREATE_INDEX_TOPIC,
-    CREATE_INDEX_RECEIVED_AT,
-    CREATE_INDEX_TENANT_LINE,
-    CREATE_INDEX_PROCESS_METRIC,
+    CREATE_RAW_LOGS_TABLE
 )
 
 def init_db(db_path: Path):
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
 
+    cur.execute("PRAGMA journal_mode=WAL;")
+    cur.execute("PRAGMA synchronous=NORMAL;")
+    cur.execute("PRAGMA temp_store=MEMORY;")
+
     cur.execute(CREATE_RAW_LOGS_TABLE)
-    cur.execute(CREATE_INDEX_TOPIC)
-    cur.execute(CREATE_INDEX_RECEIVED_AT)
-    cur.execute(CREATE_INDEX_TENANT_LINE)
-    cur.execute(CREATE_INDEX_PROCESS_METRIC)
 
     conn.commit()
     return conn
@@ -59,7 +55,7 @@ def insert_raw(
             process,
             device_type,
             metric,
-            json.dumps(payload),
+            json.dumps(payload, ensure_ascii=False),
             received_at,
         ),
     )
