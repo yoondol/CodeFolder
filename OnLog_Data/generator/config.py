@@ -10,8 +10,8 @@ LINES = [f"L{i:02d}" for i in range(1, 5)]  # N = 4
 # Time
 # =========================
 INTERVAL_SEC = 10
-START_TIME = "2025-02-01T00:00:00Z"
-YEARS = 0.05
+START_TIME = "2025-08-01T00:00:00Z"
+YEARS = 1
 
 # =========================
 # SQLite layout
