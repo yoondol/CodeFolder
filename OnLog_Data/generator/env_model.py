@@ -54,6 +54,9 @@ SENSOR_GROUP = {
     12: "OUTER_PACK",
 }
 
+def squash_humidity(h):
+    # 중심 50%, 완만한 압축
+    return 5 + 90 / (1 + math.exp(-(h - 50) / 12))
 
 def generate_env_value(sensor_no: int, now: datetime, prev=None):
     month = now.month
@@ -79,4 +82,5 @@ def generate_env_value(sensor_no: int, now: datetime, prev=None):
         temp += (prev["temp"] - temp) * drift
         hum += (prev["hum"] - hum) * drift
 
-    return round(temp, 2), round(max(5, min(95, hum)), 1)
+    hum = squash_humidity(hum)
+    return round(temp, 2), round(hum, 1)
