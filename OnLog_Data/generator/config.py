@@ -3,7 +3,7 @@
 # =========================
 # Tenant / Line
 # =========================
-TENANTS = [f"F{i:02d}" for i in range(1, 11)]
+TENANTS = [f"F{i:02d}" for i in range(2, 11)]
 LINES = [f"L{i:02d}" for i in range(1, 5)]  # N = 4
 
 # =========================
@@ -16,7 +16,7 @@ YEARS = 1
 # =========================
 # SQLite layout
 # =========================
-DB_ROOT_DIR = "data"
+DB_ROOT_DIR = "D:/onlog_data"
 
 DB_SENSOR_ENV = "sensor_env.sqlite"
 DB_SENSOR_SCALE = "sensor_scale.sqlite"
