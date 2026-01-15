@@ -3,7 +3,7 @@
 # =========================
 # Tenant / Line
 # =========================
-TENANTS = [f"F{i:02d}" for i in range(2, 11)]
+TENANTS = [f"F{i:02d}" for i in range(9, 11)]
 LINES = [f"L{i:02d}" for i in range(1, 5)]  # N = 4
 
 # =========================
