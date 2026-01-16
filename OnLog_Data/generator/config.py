@@ -3,20 +3,20 @@
 # =========================
 # Tenant / Line
 # =========================
-TENANTS = [f"F{i:02d}" for i in range(9, 11)]
+TENANTS = [f"F{i:02d}" for i in range(1, 11)]
 LINES = [f"L{i:02d}" for i in range(1, 5)]  # N = 4
 
 # =========================
 # Time
 # =========================
 INTERVAL_SEC = 10
-START_TIME = "2025-08-01T00:00:00Z"
-YEARS = 1
+START_TIME = "2026-01-16T00:00:00Z"
+YEARS = 0.01
 
 # =========================
 # SQLite layout
 # =========================
-DB_ROOT_DIR = "D:/onlog_data"
+DB_ROOT_DIR = "C:\GitCode\CodeFolder\OnLog_Data\generator\data"
 
 DB_SENSOR_ENV = "sensor_env.sqlite"
 DB_SENSOR_SCALE = "sensor_scale.sqlite"
