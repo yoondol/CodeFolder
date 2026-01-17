@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--data-dir", default="/mnt/d/onlog_data")
 parser.add_argument("--start", default=DEFAULT_START_DATE)  # YYYY-MM-DD
 parser.add_argument("--end",   default=DEFAULT_END_DATE)    # YYYY-MM-DD
-parser.add_argument("--pg-dsn", default="dbname=onlog user=postgres")
+parser.add_argument("--pg-dsn", default="dbname=onlog user=ingest_user password=db host=localhost")
 args = parser.parse_args()
 
 START = datetime.fromisoformat(args.start)
