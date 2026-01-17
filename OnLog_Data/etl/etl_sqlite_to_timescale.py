@@ -35,7 +35,7 @@ END   = datetime.fromisoformat(args.end)
 # Postgres
 # ======================================================
 pg_conn = psycopg2.connect(args.pg_dsn)
-pg_conn.autocommit = True
+pg_conn.autocommit = False
 pg_cur = pg_conn.cursor()
 
 INSERT_SQL = """
@@ -75,11 +75,6 @@ def process_sqlite(path: Path):
     conn = sqlite3.connect(path)
     cur = conn.cursor()
 
-    # SQLite read optimization
-    cur.execute("PRAGMA journal_mode=OFF;")
-    cur.execute("PRAGMA synchronous=OFF;")
-    cur.execute("PRAGMA temp_store=MEMORY;")
-
     cur.execute("""
       SELECT
         received_at,
@@ -98,101 +93,99 @@ def process_sqlite(path: Path):
     total_rows = 0
     t0 = time.time()
 
-    for (
-        received_at,
-        factory_id,
-        line_id,
-        process,
-        device_type,
-        metric,
-        payload_json
-    ) in cur:
+    try:
+        for (
+            received_at,
+            factory_id,
+            line_id,
+            process,
+            device_type,
+            metric,
+            payload_json
+        ) in cur:
 
-        payload = json.loads(payload_json)
-        device_name = (
-            payload.get("deviceInfo", {}).get("deviceName")
-            or payload.get("device", {}).get("deviceName")
-        )
+            payload = json.loads(payload_json)
+            device_name = (
+                payload.get("deviceInfo", {}).get("deviceName")
+                or payload.get("device", {}).get("deviceName")
+            )
 
-        # -------------------------
-        # sensor_env → TEMP / HUMIDITY
-        # -------------------------
-        if "sensor_env" in path.name:
-            for m, val in [
-                ("TEMP", payload.get("temp")),
-                ("HUMIDITY", payload.get("hum")),
-            ]:
-                if val is None:
+            if "sensor_env" in path.name:
+                for m, val in [
+                    ("TEMP", payload.get("temp")),
+                    ("HUMIDITY", payload.get("hum")),
+                ]:
+                    if val is None:
+                        continue
+
+                    batch.append((
+                        received_at,
+                        factory_id,
+                        line_id,
+                        "ENV",
+                        "ENV_SENSOR",
+                        m,
+                        make_source_id(factory_id, line_id, "ENV", "ENV_SENSOR", m),
+                        device_name,
+                        float(val),
+                        None
+                    ))
+
+            elif "sensor_scale" in path.name:
+                weight = payload.get("values", {}).get("weight")
+                if weight is None:
                     continue
 
                 batch.append((
                     received_at,
                     factory_id,
                     line_id,
-                    "ENV",
-                    "ENV_SENSOR",
-                    m,
-                    make_source_id(factory_id, line_id, "ENV", "ENV_SENSOR", m),
+                    "QC",
+                    device_type,
+                    "WEIGHT",
+                    make_source_id(factory_id, line_id, "QC", device_type, "WEIGHT"),
                     device_name,
-                    float(val),
+                    float(weight),
                     None
                 ))
 
-        # -------------------------
-        # sensor_scale → WEIGHT
-        # -------------------------
-        elif "sensor_scale" in path.name:
-            weight = payload.get("values", {}).get("weight")
-            if weight is None:
-                continue
+            elif "machine" in path.name:
+                batch.append((
+                    received_at,
+                    factory_id,
+                    line_id,
+                    process,
+                    device_type,
+                    metric,
+                    make_source_id(factory_id, line_id, process, device_type, metric),
+                    device_name,
+                    payload.get("value"),
+                    payload.get("value_bool")
+                ))
 
-            batch.append((
-                received_at,
-                factory_id,
-                line_id,
-                "QC",
-                device_type,
-                "WEIGHT",
-                make_source_id(factory_id, line_id, "QC", device_type, "WEIGHT"),
-                device_name,
-                float(weight),
-                None
-            ))
+            if len(batch) >= BATCH_SIZE:
+                execute_batch(pg_cur, INSERT_SQL, batch)
+                total_rows += len(batch)
+                log(f"{path.name}: inserted {total_rows:,} rows")
+                batch.clear()
 
-        # -------------------------
-        # machine
-        # -------------------------
-        elif "machine" in path.name:
-            batch.append((
-                received_at,
-                factory_id,
-                line_id,
-                process,
-                device_type,
-                metric,
-                make_source_id(factory_id, line_id, process, device_type, metric),
-                device_name,
-                payload.get("value"),
-                payload.get("value_bool")
-            ))
-
-        # -------------------------
-        # Batch flush
-        # -------------------------
-        if len(batch) >= BATCH_SIZE:
+        if batch:
             execute_batch(pg_cur, INSERT_SQL, batch)
             total_rows += len(batch)
-            log(f"{path.name}: inserted {total_rows:,} rows")
-            batch.clear()
 
-    if batch:
-        execute_batch(pg_cur, INSERT_SQL, batch)
-        total_rows += len(batch)
+        pg_conn.commit()        # ★ 파일 단위 commit
 
-    elapsed = time.time() - t0
-    log(f"END ETL: {path.name} | rows={total_rows:,} | {elapsed:.1f}s")
+        elapsed = time.time() - t0
+        log(f"END ETL: {path.name} | rows={total_rows:,} | {elapsed:.1f}s")
 
-    conn.close()
+    except Exception as e:
+        pg_conn.rollback()      # ★ 실패 시 롤백
+        raise
+
+    finally:
+        cur.close()             # ★ 반드시 닫기
+        conn.close()
+
 
 
 # ======================================================
