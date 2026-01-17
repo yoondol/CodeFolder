@@ -6,7 +6,7 @@ END=2025-10-03
 
 for f in /mnt/d/onlog_data/F*_*.sqlite; do
   echo "===== $f ====="
-  python3 etl_worker_copy.py \
+  python3 etl_worker_psycopg2.py \
     --sqlite "$f" \
     --start "$START" \
     --end "$END"
