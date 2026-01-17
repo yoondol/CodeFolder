@@ -3,29 +3,39 @@ import json
 import sqlite3
 from datetime import datetime
 from pathlib import Path
+import time
 
 import psycopg2
 from psycopg2.extras import execute_batch
 
 
-# =========================
+# ======================================================
+# Config (DEFAULTS)
+# ======================================================
+DEFAULT_START_DATE = "2025-10-01"
+DEFAULT_END_DATE   = "2026-02-01"
+BATCH_SIZE = 20000   # ★ 튜닝 포인트
+
+
+# ======================================================
 # CLI Args
-# =========================
+# ======================================================
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-dir", default="/mnt/d/onlog_data")
-parser.add_argument("--start", required=True)  # YYYY-MM-DD
-parser.add_argument("--end", required=True)    # YYYY-MM-DD
+parser.add_argument("--start", default=DEFAULT_START_DATE)  # YYYY-MM-DD
+parser.add_argument("--end",   default=DEFAULT_END_DATE)    # YYYY-MM-DD
 parser.add_argument("--pg-dsn", default="dbname=onlog user=postgres")
 args = parser.parse_args()
 
 START = datetime.fromisoformat(args.start)
-END = datetime.fromisoformat(args.end)
+END   = datetime.fromisoformat(args.end)
 
 
-# =========================
+# ======================================================
 # Postgres
-# =========================
+# ======================================================
 pg_conn = psycopg2.connect(args.pg_dsn)
+pg_conn.autocommit = True
 pg_cur = pg_conn.cursor()
 
 INSERT_SQL = """
@@ -45,24 +55,30 @@ VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
 """
 
 
-# =========================
+# ======================================================
 # Helpers
-# =========================
-def within_range(ts: str) -> bool:
-    t = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-    return START <= t < END
-
-
-def source_id(factory, line, process, device, metric):
+# ======================================================
+def make_source_id(factory, line, process, device, metric):
     return f"{factory}.{line}.{process}.{device}.{metric}"
 
 
-# =========================
-# ETL per file
-# =========================
+def log(msg: str):
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}", flush=True)
+
+
+# ======================================================
+# ETL per SQLite file
+# ======================================================
 def process_sqlite(path: Path):
+    log(f"START ETL: {path.name}")
+
     conn = sqlite3.connect(path)
     cur = conn.cursor()
+
+    # SQLite read optimization
+    cur.execute("PRAGMA journal_mode=OFF;")
+    cur.execute("PRAGMA synchronous=OFF;")
+    cur.execute("PRAGMA temp_store=MEMORY;")
 
     cur.execute("""
       SELECT
@@ -79,6 +95,8 @@ def process_sqlite(path: Path):
     """, (args.start, args.end))
 
     batch = []
+    total_rows = 0
+    t0 = time.time()
 
     for (
         received_at,
@@ -91,10 +109,13 @@ def process_sqlite(path: Path):
     ) in cur:
 
         payload = json.loads(payload_json)
-        device_name = payload.get("deviceInfo", {}).get("deviceName")
+        device_name = (
+            payload.get("deviceInfo", {}).get("deviceName")
+            or payload.get("device", {}).get("deviceName")
+        )
 
         # -------------------------
-        # sensor_env
+        # sensor_env → TEMP / HUMIDITY
         # -------------------------
         if "sensor_env" in path.name:
             for m, val in [
@@ -111,15 +132,14 @@ def process_sqlite(path: Path):
                     "ENV",
                     "ENV_SENSOR",
                     m,
-                    source_id(factory_id, line_id, "ENV", "ENV_SENSOR", m),
+                    make_source_id(factory_id, line_id, "ENV", "ENV_SENSOR", m),
                     device_name,
                     float(val),
-                    None,
                     None
                 ))
 
         # -------------------------
-        # sensor_scale
+        # sensor_scale → WEIGHT
         # -------------------------
         elif "sensor_scale" in path.name:
             weight = payload.get("values", {}).get("weight")
@@ -133,10 +153,9 @@ def process_sqlite(path: Path):
                 "QC",
                 device_type,
                 "WEIGHT",
-                source_id(factory_id, line_id, "QC", device_type, "WEIGHT"),
+                make_source_id(factory_id, line_id, "QC", device_type, "WEIGHT"),
                 device_name,
                 float(weight),
-                None,
                 None
             ))
 
@@ -144,9 +163,6 @@ def process_sqlite(path: Path):
         # machine
         # -------------------------
         elif "machine" in path.name:
-            val = payload.get("value")
-            val_bool = payload.get("value_bool")
-
             batch.append((
                 received_at,
                 factory_id,
@@ -154,33 +170,43 @@ def process_sqlite(path: Path):
                 process,
                 device_type,
                 metric,
-                source_id(factory_id, line_id, process, device_type, metric),
-                payload.get("device", {}).get("deviceName"),
-                val,
-                val_bool,
-                None
+                make_source_id(factory_id, line_id, process, device_type, metric),
+                device_name,
+                payload.get("value"),
+                payload.get("value_bool")
             ))
 
-        if len(batch) >= 5000:
+        # -------------------------
+        # Batch flush
+        # -------------------------
+        if len(batch) >= BATCH_SIZE:
             execute_batch(pg_cur, INSERT_SQL, batch)
-            pg_conn.commit()
+            total_rows += len(batch)
+            log(f"{path.name}: inserted {total_rows:,} rows")
             batch.clear()
 
     if batch:
         execute_batch(pg_cur, INSERT_SQL, batch)
-        pg_conn.commit()
+        total_rows += len(batch)
+
+    elapsed = time.time() - t0
+    log(f"END ETL: {path.name} | rows={total_rows:,} | {elapsed:.1f}s")
 
     conn.close()
 
 
-# =========================
+# ======================================================
 # Run
-# =========================
+# ======================================================
 data_dir = Path(args.data_dir)
 
+log(f"ETL RANGE: {args.start} → {args.end}")
+log(f"BATCH_SIZE = {BATCH_SIZE}")
+
 for sqlite_file in sorted(data_dir.glob("F*_*.sqlite")):
-    print(f"ETL: {sqlite_file.name}")
     process_sqlite(sqlite_file)
 
 pg_cur.close()
 pg_conn.close()
+
+log("ALL ETL COMPLETED")
