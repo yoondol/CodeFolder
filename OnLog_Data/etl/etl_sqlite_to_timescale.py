@@ -10,11 +10,11 @@ from psycopg2.extras import execute_batch
 
 
 # ======================================================
-# Config
+# Config (DEFAULTS)
 # ======================================================
 DEFAULT_START_DATE = "2025-10-01"
 DEFAULT_END_DATE   = "2025-10-03"
-BATCH_SIZE = 20000
+BATCH_SIZE = 20000   # ★ 튜닝 포인트
 
 
 # ======================================================
@@ -22,19 +22,21 @@ BATCH_SIZE = 20000
 # ======================================================
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-dir", default="/mnt/d/onlog_data")
-parser.add_argument("--start", default=DEFAULT_START_DATE)
-parser.add_argument("--end",   default=DEFAULT_END_DATE)
+parser.add_argument("--start", default=DEFAULT_START_DATE)  # YYYY-MM-DD
+parser.add_argument("--end",   default=DEFAULT_END_DATE)    # YYYY-MM-DD
 parser.add_argument("--pg-dsn", default="dbname=onlog user=ingest_user password=db host=localhost")
 args = parser.parse_args()
 
+START = datetime.fromisoformat(args.start)
+END   = datetime.fromisoformat(args.end)
+
 
 # ======================================================
-# Postgres (★ 핵심 변경)
+# Postgres
 # ======================================================
 pg_conn = psycopg2.connect(args.pg_dsn)
-pg_conn.autocommit = False        # ❌ True → False
+pg_conn.autocommit = True
 pg_cur = pg_conn.cursor()
-
 
 INSERT_SQL = """
 INSERT INTO raw_event (
@@ -60,7 +62,7 @@ def make_source_id(factory, line, process, device, metric):
     return f"{factory}.{line}.{process}.{device}.{metric}"
 
 
-def log(msg):
+def log(msg: str):
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}", flush=True)
 
 
@@ -70,15 +72,13 @@ def log(msg):
 def process_sqlite(path: Path):
     log(f"START ETL: {path.name}")
 
-    log(f"OPEN SQLite: {path.name}")
-    conn = sqlite3.connect(
-        f"file:{path}?mode=ro&immutable=1",
-        uri=True,
-        timeout=1.0
-    )
-    log(f"OPENED SQLite: {path.name}")
-
+    conn = sqlite3.connect(path)
     cur = conn.cursor()
+
+    # SQLite read optimization
+    cur.execute("PRAGMA journal_mode=OFF;")
+    cur.execute("PRAGMA synchronous=OFF;")
+    cur.execute("PRAGMA temp_store=MEMORY;")
 
     cur.execute("""
       SELECT
@@ -98,101 +98,101 @@ def process_sqlite(path: Path):
     total_rows = 0
     t0 = time.time()
 
-    try:
-        for (
-            received_at,
-            factory_id,
-            line_id,
-            process,
-            device_type,
-            metric,
-            payload_json
-        ) in cur:
+    for (
+        received_at,
+        factory_id,
+        line_id,
+        process,
+        device_type,
+        metric,
+        payload_json
+    ) in cur:
 
-            payload = json.loads(payload_json)
+        payload = json.loads(payload_json)
+        device_name = (
+            payload.get("deviceInfo", {}).get("deviceName")
+            or payload.get("device", {}).get("deviceName")
+        )
 
-            device_name = (
-                payload.get("deviceInfo", {}).get("deviceName")
-                or payload.get("device", {}).get("deviceName")
-            )
-
-            if "sensor_env" in path.name:
-                for m, val in [
-                    ("TEMP", payload.get("temp")),
-                    ("HUMIDITY", payload.get("hum")),
-                ]:
-                    if val is None:
-                        continue
-
-                    batch.append((
-                        received_at,
-                        factory_id,
-                        line_id,
-                        "ENV",
-                        "ENV_SENSOR",
-                        m,
-                        make_source_id(factory_id, line_id, "ENV", "ENV_SENSOR", m),
-                        device_name,
-                        float(val),
-                        None
-                    ))
-
-            elif "sensor_scale" in path.name:
-                weight = payload.get("values", {}).get("weight")
-                if weight is None:
+        # -------------------------
+        # sensor_env → TEMP / HUMIDITY
+        # -------------------------
+        if "sensor_env" in path.name:
+            for m, val in [
+                ("TEMP", payload.get("temp")),
+                ("HUMIDITY", payload.get("hum")),
+            ]:
+                if val is None:
                     continue
 
                 batch.append((
                     received_at,
                     factory_id,
                     line_id,
-                    "QC",
-                    device_type,
-                    "WEIGHT",
-                    make_source_id(factory_id, line_id, "QC", device_type, "WEIGHT"),
+                    "ENV",
+                    "ENV_SENSOR",
+                    m,
+                    make_source_id(factory_id, line_id, "ENV", "ENV_SENSOR", m),
                     device_name,
-                    float(weight),
+                    float(val),
                     None
                 ))
 
-            elif "machine" in path.name:
-                batch.append((
-                    received_at,
-                    factory_id,
-                    line_id,
-                    process,
-                    device_type,
-                    metric,
-                    make_source_id(factory_id, line_id, process, device_type, metric),
-                    device_name,
-                    payload.get("value"),
-                    payload.get("value_bool")
-                ))
+        # -------------------------
+        # sensor_scale → WEIGHT
+        # -------------------------
+        elif "sensor_scale" in path.name:
+            weight = payload.get("values", {}).get("weight")
+            if weight is None:
+                continue
 
-            if len(batch) >= BATCH_SIZE:
-                execute_batch(pg_cur, INSERT_SQL, batch)
-                total_rows += len(batch)
-                log(f"{path.name}: inserted {total_rows:,} rows")
-                batch.clear()
+            batch.append((
+                received_at,
+                factory_id,
+                line_id,
+                "QC",
+                device_type,
+                "WEIGHT",
+                make_source_id(factory_id, line_id, "QC", device_type, "WEIGHT"),
+                device_name,
+                float(weight),
+                None
+            ))
 
-        if batch:
+        # -------------------------
+        # machine
+        # -------------------------
+        elif "machine" in path.name:
+            batch.append((
+                received_at,
+                factory_id,
+                line_id,
+                process,
+                device_type,
+                metric,
+                make_source_id(factory_id, line_id, process, device_type, metric),
+                device_name,
+                payload.get("value"),
+                payload.get("value_bool")
+            ))
+
+        # -------------------------
+        # Batch flush
+        # -------------------------
+        if len(batch) >= BATCH_SIZE:
             execute_batch(pg_cur, INSERT_SQL, batch)
             total_rows += len(batch)
+            log(f"{path.name}: inserted {total_rows:,} rows")
             batch.clear()
 
-        pg_conn.commit()
+    if batch:
+        execute_batch(pg_cur, INSERT_SQL, batch)
+        total_rows += len(batch)
 
-        elapsed = time.time() - t0
-        log(f"END ETL: {path.name} | rows={total_rows:,} | {elapsed:.1f}s")
+    elapsed = time.time() - t0
+    log(f"END ETL: {path.name} | rows={total_rows:,} | {elapsed:.1f}s")
 
-    except Exception as e:
-        pg_conn.rollback()
-        log(f"ROLLBACK {path.name} due to error: {e}")
-        raise
-
-    finally:
-        conn.close()
-
+    conn.close()
 
 
 # ======================================================
