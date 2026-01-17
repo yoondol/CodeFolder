@@ -70,13 +70,15 @@ def log(msg):
 def process_sqlite(path: Path):
     log(f"START ETL: {path.name}")
 
-    conn = sqlite3.connect(path)
-    cur = conn.cursor()
+    log(f"OPEN SQLite: {path.name}")
+    conn = sqlite3.connect(
+        f"file:{path}?mode=ro&immutable=1",
+        uri=True,
+        timeout=1.0
+    )
+    log(f"OPENED SQLite: {path.name}")
 
-    # SQLite read optimization
-    cur.execute("PRAGMA journal_mode=OFF;")
-    cur.execute("PRAGMA synchronous=OFF;")
-    cur.execute("PRAGMA temp_store=MEMORY;")
+    cur = conn.cursor()
 
     cur.execute("""
       SELECT
@@ -107,23 +109,13 @@ def process_sqlite(path: Path):
             payload_json
         ) in cur:
 
-            # -------------------------
-            # JSON 안전 파싱 (★ 중요)
-            # -------------------------
-            try:
-                payload = json.loads(payload_json)
-            except Exception:
-                log(f"SKIP invalid JSON in {path.name}")
-                continue
+            payload = json.loads(payload_json)
 
             device_name = (
                 payload.get("deviceInfo", {}).get("deviceName")
                 or payload.get("device", {}).get("deviceName")
             )
 
-            # -------------------------
-            # sensor_env
-            # -------------------------
             if "sensor_env" in path.name:
                 for m, val in [
                     ("TEMP", payload.get("temp")),
@@ -145,9 +137,6 @@ def process_sqlite(path: Path):
                         None
                     ))
 
-            # -------------------------
-            # sensor_scale
-            # -------------------------
             elif "sensor_scale" in path.name:
                 weight = payload.get("values", {}).get("weight")
                 if weight is None:
@@ -166,9 +155,6 @@ def process_sqlite(path: Path):
                     None
                 ))
 
-            # -------------------------
-            # machine
-            # -------------------------
             elif "machine" in path.name:
                 batch.append((
                     received_at,
@@ -183,24 +169,18 @@ def process_sqlite(path: Path):
                     payload.get("value_bool")
                 ))
 
-            # -------------------------
-            # Batch flush
-            # -------------------------
             if len(batch) >= BATCH_SIZE:
                 execute_batch(pg_cur, INSERT_SQL, batch)
                 total_rows += len(batch)
                 log(f"{path.name}: inserted {total_rows:,} rows")
                 batch.clear()
 
-        # -------------------------
-        # Final flush
-        # -------------------------
         if batch:
             execute_batch(pg_cur, INSERT_SQL, batch)
             total_rows += len(batch)
             batch.clear()
 
-        pg_conn.commit()   # ★ 파일 단위 commit
+        pg_conn.commit()
 
         elapsed = time.time() - t0
         log(f"END ETL: {path.name} | rows={total_rows:,} | {elapsed:.1f}s")
@@ -212,6 +192,7 @@ def process_sqlite(path: Path):
 
     finally:
         conn.close()
+
 
 
 # ======================================================
