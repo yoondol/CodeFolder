@@ -3,8 +3,8 @@ set -e
 
 DATA_DIR="/mnt/d/onlog_data"
 
-START_DATE="2026-01-17"
-END_DATE="2026-01-20"
+START_DATE="2025-10-01"
+END_DATE="2026-03-05"
 
 PREFIX="${1:-F}"
 
