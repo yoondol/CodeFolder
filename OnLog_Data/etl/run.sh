@@ -1,12 +1,20 @@
 #!/bin/bash
+set -e
 
-START=2025-10-01
-END=2026-10-02
+if [ $# -ne 1 ]; then
+  echo "Usage: ./run.sh <sqlite_file>"
+  exit 1
+fi
 
-for f in /mnt/d/onlog_data/F*_*.sqlite; do
-  echo "===== $f ====="
-  python3 etl_5.py \
-    --sqlite "$f" \
-    --start "$START" \
-    --end "$END"
-done
+SQLITE_FILE="$1"
+
+# ===============================
+# ETL 기간 (여기서만 관리)
+# ===============================
+START_DATE="2025-10-01"
+END_DATE="2025-10-03"
+
+python3 etl.py \
+  "$SQLITE_FILE" \
+  "$START_DATE" \
+  "$END_DATE"
