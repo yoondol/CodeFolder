@@ -201,8 +201,12 @@ def main():
 
     if STOP_REQUESTED:
         log(f"STOPPED BY USER at event_time={last_event_time}")
+        log(f"TOTAL INSERTED: {total:,}")
+        sys.exit(130)
     else:
         log(f"COMPLETED FILE {sqlite_path.name}")
+        log(f"TOTAL INSERTED: {total:,}")
+        sys.exit(0)
 
     log(f"TOTAL INSERTED: {total:,}")
 
