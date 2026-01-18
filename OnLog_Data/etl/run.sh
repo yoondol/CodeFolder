@@ -1,12 +1,11 @@
 #!/bin/bash
-set -e
 
 START=2025-10-01
-END=2025-10-03
+END=2026-02-01
 
 for f in /mnt/d/onlog_data/F*_*.sqlite; do
   echo "===== $f ====="
-  python3 etl_worker_psycopg2.py \
+  python3 etl_5.py \
     --sqlite "$f" \
     --start "$START" \
     --end "$END"
