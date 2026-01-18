@@ -6,15 +6,19 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-SQLITE_FILE="$1"
+# ===============================
+# 고정 설정
+# ===============================
+DATA_DIR="/mnt/d/onlog_data"
+SQLITE_FILE="$DATA_DIR/$1"
 
-# ===============================
-# ETL 기간 (여기서만 관리)
-# ===============================
 START_DATE="2025-10-01"
 END_DATE="2025-10-03"
 
-python3 etl.py \
-  "$SQLITE_FILE" \
-  "$START_DATE" \
-  "$END_DATE"
+if [ ! -f "$SQLITE_FILE" ]; then
+  echo "File not found: $SQLITE_FILE"
+  exit 1
+fi
+
+echo "===== $SQLITE_FILE ====="
+python3 etl.py "$SQLITE_FILE" "$START_DATE" "$END_DATE"

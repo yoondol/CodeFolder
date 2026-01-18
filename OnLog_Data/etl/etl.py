@@ -65,16 +65,12 @@ def normalize_bool(v):
 # ===============================
 def main():
     if len(sys.argv) != 4:
-        print("Usage: python3 etl.py <sqlite_file> <start_date> <end_date>")
+        print("Usage: python3 etl.py <sqlite_path> <start_date> <end_date>")
         sys.exit(1)
 
     sqlite_path = Path(sys.argv[1])
     start_date = sys.argv[2]
     end_date = sys.argv[3]
-
-    if not sqlite_path.exists():
-        print(f"File not found: {sqlite_path}")
-        sys.exit(1)
 
     log(f"START FILE: {sqlite_path.name}")
     log(f"RANGE: {start_date} → {end_date}")
@@ -144,7 +140,6 @@ def main():
         device_name = extract_device_name(payload)
         last_event_time = received_at
 
-        # sensor_env
         if "sensor_env" in sqlite_path.name:
             for m, v in [("TEMP", payload.get("temp")),
                          ("HUMIDITY", payload.get("hum"))]:
@@ -163,7 +158,6 @@ def main():
                     None
                 ))
 
-        # sensor_scale
         elif "sensor_scale" in sqlite_path.name:
             w = payload.get("values", {}).get("weight")
             if w is None:
@@ -181,7 +175,6 @@ def main():
                 None
             ))
 
-        # machine
         elif "machine" in sqlite_path.name:
             batch.append((
                 received_at,
