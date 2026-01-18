@@ -14,7 +14,7 @@ from psycopg2.extras import execute_batch
 # Config
 # ======================================================
 DEFAULT_START_DATE = "2025-10-01"
-DEFAULT_END_DATE   = "2025-10-03"
+DEFAULT_END_DATE   = "2025-10-02"
 BATCH_SIZE = 20000
 
 
