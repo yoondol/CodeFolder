@@ -12,7 +12,7 @@ from psycopg2.extras import execute_batch
 # ===============================
 # Config
 # ===============================
-BATCH_SIZE = 20000
+BATCH_SIZE = 100000
 PG_DSN = "dbname=onlog user=ingest_user password=db host=localhost"
 
 
