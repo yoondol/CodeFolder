@@ -37,4 +37,4 @@ for SQLITE_FILE in "$DATA_DIR"/${PREFIX}*.sqlite; do
   echo
 done
 
-echo "=== ETL COMPLETED ==="
+echo "=== ETL COMPLETED NOW ==="
