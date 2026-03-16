@@ -1,12 +1,9 @@
-[
- {
-  "rank": 1,
-  "team": "teamA",
-  "score": 0.612
- },
- {
-  "rank": 2,
-  "team": "teamB",
-  "score": 0.603
- }
-]
+{
+  "metric": "PR-AUC",
+  "updated_at": "2026-03-16T15:10:00+09:00",
+  "leaderboard": [
+    { "rank": 1, "team": "teamA", "score": 0.612431 },
+    { "rank": 2, "team": "teamB", "score": 0.603219 },
+    { "rank": 3, "team": "teamC", "score": 0.598745 }
+  ]
+}
