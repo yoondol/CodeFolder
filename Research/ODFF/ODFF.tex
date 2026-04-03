@@ -43,7 +43,7 @@
 
 %=================================================================
 % Full title of the paper (Capitalized)
-\Title{ODFF: Operational Data Foundation Framework}
+\Title{Operational Data Foundation Framework for SME Smart Manufacturing: Field Implementation and Evidence}
 
 % Author Orchid ID: enter ID or remove command
 \newcommand{\orcidauthorA}{0009-0003-4190-193X}
@@ -196,7 +196,7 @@ This section analyzes the data basis of smart manufacturing as an operational pi
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{figures/3-1_Data_Lifecycle.png}
-    \caption{Enter Caption}
+    \caption{General data pipeline lifecycle in smart manufacturing.}
     \label{fig:data_lifecycle}
 \end{figure}
 
@@ -224,7 +224,7 @@ This lifecycle is analytically useful because it makes visible the full path thr
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{figures/3-2_Data_Lifecycle.png}
-    \caption{Enter Caption}
+    \caption{SME constraints across the general data pipeline lifecycle.}
     \label{fig:3-2_data_lifecycle}
 \end{figure}
 
@@ -275,7 +275,7 @@ Taken together, these risks show that a smart manufacturing data pipeline in con
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{figures/4-1_Framework.png}
-    \caption{Enter Caption}
+    \caption{Operational Data Foundation Framework.}
     \label{fig:4-1_framework}
 \end{figure}
 
@@ -356,7 +356,7 @@ Table~\ref{tab:constraint_design_logic} provides this first synthesis. It shows 
 
 
 \begin{table}[H]
-\caption{From SME Constraints to Operational Design Logic.\label{tab:constraint_design_logic}}
+\caption{From SME constraints to operational design logic.\label{tab:constraint_design_logic}}
 \begin{adjustwidth}{-\extralength}{0cm}
 \begin{tabularx}{\fulllength}{
 >{\raggedright\arraybackslash}X
@@ -446,7 +446,7 @@ Taken together, Table~\ref{tab:constraint_design_logic} translates constrained S
 
 
 \begin{table}[H]
-\caption{Mapping the General Lifecycle to the Operational Foundation Logic.\label{tab:lifecycle_foundation_logic}}
+\caption{Mapping the general data pipeline lifecycle to the operational foundation logic.\label{tab:lifecycle_foundation_logic}}
 \begin{adjustwidth}{-\extralength}{0cm}
 \begin{tabularx}{\fulllength}{
 >{\raggedright\arraybackslash}X
@@ -534,19 +534,19 @@ This section describes how the proposed framework was instantiated in a real SME
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{figures/5-1_Factory.png}
-    \caption{Enter Caption}
+    \caption{Factory layout with representative sensing and edge deployment.}
     \label{fig:5-1_factory}
 \end{figure}
 
-The empirical setting of this study was an SME factory producing traditional food products, namely the Idang Food yakgwa plant. Its production flow spans multiple stages, including raw-material receiving, weighing, mixing, forming, frying, coating, cooling, inner packaging, detection, outer packaging, and storage. Rather than operating as a single highly integrated automated line, the plant consists of multiple workspaces and process segments whose operational states are spatially distributed. As a result, plant status cannot be understood through observation of a single machine or point in time; it requires distributed state information to be captured and connected across the production flow.
+The empirical setting of this study was the Idang Food yakgwa plant, one of several OEM factories managed by ONGOING, an F\&B company operating across multiple production sites. The deployment was therefore designed not as an isolated factory pilot, but as the first field implementation of a broader architecture in which operational data from multiple factories could be collected locally and managed through a shared cloud-side structure. In this sense, Idang Food was selected not only as a practical implementation site, but also as a representative case through which this study examines how an operational data foundation can be established under constrained SME manufacturing conditions.
 
-Before digitalization, production and quality management at the plant relied primarily on manual records and worker experience. Although records existed, they were neither consistently structured nor accumulated in forms suitable for retrieval, comparison, or downstream analysis. Process-state information was also fragmented across spaces and tasks, making it difficult to trace when and where abnormal conditions emerged and under what environmental or operational changes they occurred. The core problem, therefore, was not the complete absence of data, but the absence of continuous, automatic, and reusable operational records.
+The plant's production flow included raw-material receiving, weighing, mixing, forming, frying, coating, cooling, inner packaging, detection, outer packaging, and storage. Yet the main challenge of the site did not lie simply in the number of stages. Operationally relevant states were distributed across different rooms, devices, and tasks, while production and quality management depended heavily on manual records and worker judgement. Process conditions were not accumulated as connected records, weighing-related checks remained strongly operator-dependent, and environmental histories across process and storage zones were difficult to preserve and compare over time. As a result, when abnormal conditions or quality issues emerged, the plant did not lack observations in an absolute sense; rather, it lacked continuous and reusable operational records that could support traceability and later interpretation.
 
-This setting also reflects the characteristic constraints of SME manufacturing. The plant did not have a pre-established large-scale smart-factory infrastructure with stable internal connectivity and standardized interfaces. Instead, it combined legacy equipment, fragmented information flow, manual logging practices, and limited internal networking. In particular, always-on WiFi/LAN connectivity was unavailable inside the plant, making direct connection from field devices to a centralized system impractical. In addition, the commercial electronic scale used in production did not provide native networking capability, so its integration required a non-intrusive retrofit rather than equipment replacement. In this sense, the plant was not merely small in scale; it represented a deployment environment in which the assumptions of stable connectivity, standardized access, and centralized visibility were weakened from the outset.
+This made the site suitable for the present study. Idang Food reflected several conditions that commonly characterize constrained SME factories: heterogeneous and partly non-networked sources, fragmented process visibility, limited internal connectivity, and restricted operational slack for day-to-day technical management. Under such conditions, an operational data foundation could not be assumed to arise simply from downstream software or cloud connectivity. It first had to be built from the field upward by making process states recordable, collectable, and sustainable as data under actual production constraints.
 
-For this reason, the sensing scope of the study was defined not as an arbitrary technology trial, but as a risk-oriented operational design. Temperature and humidity sensors were deployed across key locations including the plant entrance, forming room, heating room, cooling room, drying room, packaging areas, raw-material storage, and finished-product storage. Each placement served a distinct purpose, such as environmental comparison with outside conditions, monitoring of heat-sensitive or humidity-sensitive stages, or preservation tracking during storage. In addition, the inclusion of the electronic scale extended the system beyond an environmental sensor network and brought a legacy production device into the operational data flow. The resulting sensing scope was therefore defined not by what could be measured in general, but by which operational risks and process states needed to be made recordable and traceable.
+The field deployment should be understood in this light. The study did not begin from an already prepared digital source environment, but from the practical requirement to establish one inside the factory through on-site sensing and edge-side installation. Figure~\ref{fig:5-1_factory} presents this deployment context by showing the production environment together with representative sensing and edge elements installed in the field. The significance of the case, however, lies less in the installation itself than in what that installation enabled: a concrete demonstration of how a constrained SME factory can begin to acquire the operational basis required for continuity, traceability, and later cloud-side integration.
 
-Taken together, this plant provides an appropriate field setting for the present study because it exposes, in a concentrated form, the conditions under which an operational data foundation becomes necessary. Manual records, fragmented visibility, non-networked equipment, limited connectivity, and low operational slack all coexist in this environment. The value of the case lies not in the specific product category itself, but in the fact that it makes visible why an operationally viable data foundation must precede higher-level smart manufacturing applications in constrained SME settings.
+Accordingly, the role of Idang Food in this study was twofold. At the factory level, it provided a realistic constrained environment in which fragmented sources, manual practices, and brownfield conditions had to be handled in practice. At the system level, it served as the first implementation site of an architecture intended to support factory-to-cloud data flow and centralized multi-factory management. For this reason, the next subsection begins with field data acquisition and the edge architecture, because the first requirement of the operational data foundation was to explain how field data were physically captured and operationally secured at the factory before they were forwarded into the broader cloud-side system.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Field Data Acquisition and Edge Stack}
@@ -554,21 +554,21 @@ Taken together, this plant provides an appropriate field setting for the present
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{figures/edge.png}
-    \caption{Enter Caption}
+    \caption{Edge architecture for field data acquisition.}
     \label{fig:edge}
 \end{figure}
 
-To secure field data under these conditions, the acquisition layer was implemented as a source-near architecture in which data were first accepted and preserved locally before being forwarded to upper layers. The overall acquisition path began from source devices such as temperature--humidity sensors and the electronic scale, continued through LoRa communication and a LoRa gateway, and then passed through a ChirpStack-based collection layer, an MQTT broker, and a Raspberry Pi~5 edge node. In this structure, the edge node was not treated as a simple relay point, but as the first operational boundary for accepting, buffering, and preserving field data.
+The factory-side acquisition layer was implemented as an edge-centered intake stack that received field data inside the plant, preserved them locally, and then forwarded them to the cloud event pipeline. Because the plant did not provide a uniform network-native source environment or stable plant-wide connectivity across distributed process areas, the architecture was organized around a local edge boundary rather than direct source-to-cloud transmission.
 
-LoRa was selected as the field communication protocol because the plant lacked stable internal Internet infrastructure and required a deployment mode that could support distributed sensing without extensive wiring. The choice was not intended to claim universal superiority over WiFi or LTE, but to support long-range, low-power, and incrementally extensible sensing under brownfield conditions. On this basis, an independent gateway--edge local network was established so that field data could be accepted even in the absence of permanent plant-wide connectivity.
+LoRaWAN was selected as the field communication network because it allowed distributed source collection across the plant without extensive wiring and supported locally controlled operation under constrained factory conditions. Accordingly, the plant-side network was organized around LoRa uplinks converging on a local gateway and edge node.
 
-The installed field devices included twelve DRAGINO LHT65N-E3 temperature--humidity sensors, one QW-15 electronic scale, one RAK7268V2 LoRa gateway, and one Raspberry Pi~5 edge server equipped with an NVMe SSD for local persistence. The environmental sensors were battery-powered LoRa devices distributed across the plant, while the gateway and edge node served as the local intake infrastructure. This was therefore not a homogeneous IoT deployment composed only of network-native devices, but a brownfield source environment in which LoRa sensors and a non-networked legacy scale had to coexist within the same operational flow.
+As shown in Figure~\ref{fig:edge}, field events were transmitted through LoRa to the gateway, handled by ChirpStack Gateway Bridge and ChirpStack Server, relayed through an MQTT broker, and then accepted by edge-side services. On the edge node, MQTT logger and source-specific collectors wrote accepted records into local SQLite stores. This made the acquisition path explicit---field transmission, gateway reception, LoRaWAN handling, MQTT relay, edge logging, and upper-layer forwarding were treated as separate steps---and allowed the edge node to function as the first stable intake and persistence boundary of the system.
 
-The legacy scale required a separate integration path because it did not support native network transmission. To incorporate weighing data without replacing the device, the printer port of the scale was connected through an RS232 cross-serial cable, and the resulting signal was converted into a data stream readable by the Raspberry Pi. In practice, this flow can be summarized as \emph{Scale $\rightarrow$ RS232 $\rightarrow$ RPi $\rightarrow$ LoRa}. In addition, the collection program for the scale was implemented as a daemon script so that data capture resumed automatically after disconnection or reconnection. This made the integration operationally usable rather than merely technically possible.
+A central function of the edge stack was local persistence. Sensor uplinks accepted through MQTT were written to SQLite before cloud delivery was assumed, and additional edge-side components preserved operational traces needed to inspect collection quality and local failure modes. As a result, accepted field events first became durable inside the factory rather than remaining only as transient in-flight messages.
 
-Beyond the gateway, ChirpStack Gateway Bridge and ChirpStack Server managed the LoRaWAN devices and the gateway, while an MQTT broker served as the hub for uplink message transfer. On the edge node, an MQTT logger and a scale logger recorded sensor uplinks and scale data, respectively, into SQLite as local backups. This meant that raw payloads and weighing logs were preserved at the edge regardless of the state of the upper transmission path. The edge therefore functioned as a local persistence boundary rather than as a transient communication hop, and continuity was secured first at the field side rather than deferred to cloud reception.
+The edge stack also accommodated heterogeneous source conditions. A representative example was the production electronic scale, which did not provide native network communication. Its printer port was connected to the Raspberry Pi through an RS232 serial link, and a dedicated daemon collector parsed the incoming weighing values, stored them locally, and transmitted them through a LoRa device attached to the Raspberry Pi so that they could enter the same acquisition path as other field events. In practical terms, this flow can be summarized as \emph{Scale $\rightarrow$ RS232 $\rightarrow$ RPi $\rightarrow$ LoRa}. This showed that the edge architecture could absorb not only standard wireless sensor uplinks but also non-networked legacy equipment within the same factory-side event flow.
 
-The edge stack also incorporated diagnosability-oriented support functions. A Redis metrics exporter transferred session- and uplink-related metrics from Redis into SQLite for longer-term analysis, while a battery monitor tracked voltage-related payload fields to observe sensor energy status. Additional metrics tools were used to cross-check gateway reception, device transmission, and database storage states and to analyze reception quality based on RSSI and SNR. The improvement of packet success rate from roughly 33\% to approximately 95\% in the field showed that edge-side diagnosability was not a secondary convenience, but an operational component of continuity and maintainability. Overall, the field acquisition and edge stack formed an operational capture layer that could incorporate heterogeneous sources, preserve data locally, and support source-near diagnosis of collection instability.
+Once accepted and retained at the edge, the records were forwarded by producer services to the cloud broker layer. In the broader architecture, this upstream path was organized around Kafka-based streaming, including AWS MSK on the cloud side, so that raw events from each factory could be published into a shared event pipeline for subsequent parsing, normalization, and persistence. The next subsection explains that cloud-side processing path.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Cloud Processing Architecture}
@@ -576,7 +576,7 @@ The edge stack also incorporated diagnosability-oriented support functions. A Re
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{figures/kafka.png}
-    \caption{Enter Caption}
+    \caption{Cloud-side processing architecture.}
     \label{fig:kafka}
 \end{figure}
 
@@ -596,7 +596,7 @@ The cloud architecture also maintained clear deployment boundaries. Shared event
 
 
 \begin{table}[H]
-\caption{Cloud-side Components and Responsibilities.\label{tab:cloud_components_responsibilities}}
+\caption{Cloud-side components and responsibilities.\label{tab:cloud_components_responsibilities}}
 \begin{tabularx}{\textwidth}{
 >{\raggedright\arraybackslash}X
 >{\raggedright\arraybackslash}X
@@ -693,7 +693,7 @@ This subsection assesses the framework in terms of the six core requirements def
 
 
 \begin{table}[H]
-\caption{Requirement-wise Evidence and Significance.\label{tab:requirement_evidence_significance}}
+\caption{Requirement-wise evidence and significance.\label{tab:requirement_evidence_significance}}
 \begin{tabularx}{\textwidth}{
 >{\raggedright\arraybackslash}X
 >{\raggedright\arraybackslash}X
@@ -763,7 +763,7 @@ Once the likely bottleneck had been localized to the communication layer, the re
 
 
 \begin{table}[H]
-\caption{Segment-wise Event Counts during Reception Degradation.\label{tab:segmentwise_event_counts}}
+\caption{Event counts across pipeline segments during reception degradation.\label{tab:segmentwise_event_counts}}
 \begin{tabularx}{\textwidth}{
 >{\raggedright\arraybackslash}X
 >{\raggedleft\arraybackslash}X
@@ -813,14 +813,20 @@ The significance of this case extends beyond successful LoRa tuning. It demonstr
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{figures/6-1_reception.png}
-    \caption{Enter Caption}
-    \label{fig:reception}
+    \subfloat[\centering\label{fig:reception_before}]{
+        \includegraphics[width=\linewidth]{figures/figure6_2_before_adjustment.png}
+    }\\[0.7em]
+    \subfloat[\centering\label{fig:reception_after}]{
+        \includegraphics[width=\linewidth]{figures/figure6_2_after_adjustment.png}
+    }
+    \caption{Reception stability across sensing points over time. (\textbf{a}) Before adjustment. (\textbf{b}) After adjustment.}
+    \label{fig:reception_stability}
 \end{figure}
 
 
+
 \begin{table}[H]
-\caption{Outcome of Reception Reliability Improvement.\label{tab:reception_improvement_outcome}}
+\caption{Outcome of reception reliability improvement.\label{tab:reception_improvement_outcome}}
 \begin{tabularx}{\textwidth}{
 >{\raggedright\arraybackslash}X
 >{\raggedleft\arraybackslash}X
@@ -894,47 +900,6 @@ This study has several limitations. The framework was examined through a single 
 
 \conflictsofinterest{The authors declare no conflicts of interest.} 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Optional
-
-\abbreviations{Abbreviations}{
-The following abbreviations are used in this manuscript:
-\\
-
-\noindent 
-\begin{tabular}{@{}ll}
-MDPI & Multidisciplinary Digital Publishing Institute\\
-DOAJ & Directory of open access journals\\
-TLA & Three letter acronym\\
-LD & Linear dichroism
-\end{tabular}
-}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Optional
-\appendixtitles{no} % Leave argument "no" if all appendix headings stay EMPTY (then no dot is printed after "Appendix A"). If the appendix sections contain a heading then change the argument to "yes".
-\appendixstart
-\appendix
-\section[\appendixname~\thesection]{}
-\subsection[\appendixname~\thesubsection]{}
-The appendix is an optional section that can contain details and data supplemental to the main text---for example, explanations of experimental details that would disrupt the flow of the main text but nonetheless remain crucial to understanding and reproducing the research shown; figures of replicates for experiments of which representative data are shown in the main text can be added here if brief, or as Supplementary Data. Mathematical proofs of results not central to the paper can be added as an appendix.
-
-\begin{table}[H] 
-\caption{This is a table caption.\label{tab5}}
-%\newcolumntype{C}{>{\centering\arraybackslash}X}
-\begin{tabularx}{\textwidth}{CCC}
-\toprule
-\textbf{Title 1}	& \textbf{Title 2}	& \textbf{Title 3}\\
-\midrule
-Entry 1		& Data			& Data\\
-Entry 2		& Data			& Data\\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\section[\appendixname~\thesection]{}
-All appendix sections must be cited in the main text. In the appendices, Figures, Tables, etc. should be labeled, starting with ``A''---e.g., Figure A1, Figure A2, etc.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\isPreprints{}{% This command is only used for ``preprints''.
