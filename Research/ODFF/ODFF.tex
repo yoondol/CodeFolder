@@ -575,12 +575,6 @@ Once accepted and retained at the edge, the records were forwarded by producer s
 
 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{figures/Cloud_Architecture.pdf}
-    \caption{Cloud-side processing architecture.}
-    \label{fig:cloud_architecture}
-\end{figure}
 
 
 On top of the field acquisition layer, the system implemented a cloud-side processing path that received raw events from factory edges, routed them through a brokered stream architecture, and transformed them into persistent and service-ready records. Multiple factory-originated event streams were forwarded to the AWS cloud and published into Kafka topics in the MSK cluster, where subsequent stages handled normalization, derivation, persistence, and operational consumption. Figure~\ref{fig:cloud_architecture} presents this deployment-level structure by showing how data from multiple factories converged into the shared AWS-based cloud environment and entered a common brokered processing path. In this way, the cloud layer served not as a single application endpoint, but as a staged processing structure connecting multi-factory intake to downstream use.
@@ -588,6 +582,15 @@ On top of the field acquisition layer, the system implemented a cloud-side proce
 Within this cloud path, raw factory events first entered broker topics such as \texttt{sensor.env.raw}, \texttt{sensor.scale.raw}, and \texttt{machine.raw}. These raw topics were consumed by the parser stream, which decoded heterogeneous payloads, mapped sources, unified metrics, normalized timestamps, applied deduplication, and produced canonical events for downstream use. On top of this normalized stream, KPI processing and alert-side consumption proceeded as separate downstream paths: KPI streams generated derived indicators such as production quantity and yield, while alert consumers used the same governed event basis to detect conditions requiring notification or intervention. Finally, ingest consumers persisted the normalized and derived outputs into the database layer for later dashboard, alert, and analytical use. In this way, the cloud path functioned as a staged transformation flow through which heterogeneous raw messages were converted into governed and reusable operational records.
 
 A central design objective of this layer was functional decoupling. Factory-side producers were allowed to publish raw events to the broker without depending directly on parser execution, KPI computation, alert handling, or database ingestion. This separation reduced failure propagation across stages and made the system easier to modify as rules, sources, and downstream requirements evolved. In practical terms, the broker layer provided the shared event boundary through which intake, interpretation, derivation, persistence, and service consumption could remain structurally separated.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{figures/Cloud_Architecture.pdf}
+    \caption{Cloud-side processing architecture.}
+    \label{fig:cloud_architecture}
+\end{figure}
+
 
 The parser stream concentrated the semantic normalization responsibility of the cloud path. Rather than allowing later components to interpret device-specific payload structures independently, the system converted heterogeneous source messages into a governed common form at this stage. In this implementation, \texttt{source\_id} functioned as the canonical identifier of each operational source by organizing identity around controlled attributes such as tenant, line, process, device type, and metric, while timestamp semantics were stabilized by distinguishing \texttt{event\_time}, \texttt{edge\_ingest\_time}, and \texttt{db\_ingest\_time} as separate time axes with different operational roles. This prevented ambiguity in ordering and interpretation and kept downstream processing aligned with a consistent semantic discipline.
 
