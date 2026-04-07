@@ -353,9 +353,11 @@ This subsection synthesizes the framework by reconnecting it to the problem spac
 Table~\ref{tab:constraint_design_logic} provides this first synthesis. It shows that constrained SME conditions are not merely a list of deployment difficulties, but recurring operational design problems that can be translated in a structured way. Each major constraint category gives rise to one or more operational risks; each risk is then expressed as a core requirement, translated into one or more design principles, and made assessable through corresponding invariants. The table thus shows how the framework is grounded in recurring structural problems in constrained SME manufacturing.
 
 
+
 \begin{table}[H]
 \caption{From SME constraints to operational design logic.\label{tab:constraint_design_logic}}
 \begin{adjustwidth}{-\extralength}{0cm}
+\renewcommand{\arraystretch}{1.2}
 \begin{tabularx}{\fulllength}{
 >{\raggedright\arraybackslash}X
 >{\raggedright\arraybackslash}X
@@ -363,7 +365,7 @@ Table~\ref{tab:constraint_design_logic} provides this first synthesis. It shows 
 >{\raggedright\arraybackslash}X
 >{\raggedright\arraybackslash}X}
 \toprule
-\textbf{SME Constraint} & \textbf{Operational Risk} & \textbf{Requirement} & \textbf{Design Principle} & \textbf{Invariant} \\
+\textbf{SME Constraint} & \textbf{Operational Risk} & \textbf{Requirements} & \textbf{Principles} & \textbf{Invariants} \\
 \midrule
 
 Heterogeneous devices and fragmented interfaces
@@ -371,55 +373,62 @@ Heterogeneous devices and fragmented interfaces
 & R2 (Governance)
 & P3 (Semantics must be contract-defined)
 & I2 (Traceability), I3 (Deterministic normalization) \\
+\specialrule{0.2pt}{0pt}{0pt}
 
 Add-on sources and partial visibility
 & RSK2, RSK6 (Evolvability risk)
 & R2, R6 (Evolvability)
 & P3, P7 (Change as a first-class assumption)
 & I2, I7 (Onboarding consistency) \\
+\specialrule{0.2pt}{0pt}{0pt}
 
 Unstable connectivity and constrained sensing
 & RSK1 (Continuity risk)
 & R1 (Continuity)
 & P1 (Continuity responsibility must be placed close to the source)
 & I1 (Durable capture) \\
+\specialrule{0.2pt}{0pt}{0pt}
 
 Weak cross-segment observability
 & RSK3 (Diagnosability risk)
 & R3 (Diagnosability)
 & P4 (Observability must follow pipeline segments)
 & I4 (Segment-localizable failure) \\
+\specialrule{0.2pt}{0pt}{0pt}
 
 Limited staff and high maintenance burden
 & RSK4 (Operability risk)
 & R4 (Operability)
 & P6 (Operations must remain lightweight, modular, and open)
 & I6 (Modular replacement) \\
+\specialrule{0.2pt}{0pt}{0pt}
 
 Weak raw-data preservation
 & RSK5 (Reprocessability risk)
 & R5 (Reprocessability)
 & P2 (Raw events must be preserved before abstraction)
 & I5 (Replayability) \\
+\specialrule{0.2pt}{0pt}{0pt}
 
 Tight functional coupling across the pipeline
 & RSK3, RSK4, RSK6
 & R3, R4, R6
 & P5 (Responsibilities must be separated by function)
 & I4, I6 \\
+\specialrule{0.2pt}{0pt}{0pt}
 
 Frequent KPI, rule, schema, and source changes
 & RSK5, RSK6
 & R5, R6
 & P7
 & I5, I7 \\
+\specialrule{0.2pt}{0pt}{0pt}
 
 Budget sensitivity and lock-in concerns
 & RSK4, RSK6
 & R4, R6
 & P6
 & I6, I7 \\
-
 \bottomrule
 \end{tabularx}
 \end{adjustwidth}
@@ -436,17 +445,17 @@ Table~\ref{tab:lifecycle_foundation_logic} provides a second synthesis by showin
 
 
 
-
 \begin{table}[H]
 \caption{Mapping the general data pipeline lifecycle to the operational foundation logic.\label{tab:lifecycle_foundation_logic}}
 \begin{adjustwidth}{-\extralength}{0cm}
+\renewcommand{\arraystretch}{1.4}
 \begin{tabularx}{\fulllength}{
+>{\raggedright\arraybackslash}p{0.16\fulllength}
+>{\raggedright\arraybackslash}p{0.24\fulllength}
 >{\raggedright\arraybackslash}X
->{\raggedright\arraybackslash}X
->{\raggedright\arraybackslash}X
->{\raggedright\arraybackslash}X
->{\raggedright\arraybackslash}X
->{\raggedright\arraybackslash}X}
+>{\raggedright\arraybackslash}p{0.12\fulllength}
+>{\raggedright\arraybackslash}p{0.10\fulllength}
+>{\raggedright\arraybackslash}p{0.10\fulllength}}
 \toprule
 \textbf{General Lifecycle Stage} & \textbf{Added Operational Meaning} & \textbf{Related Risks} & \textbf{Requirements} & \textbf{Principles} & \textbf{Invariants} \\
 \midrule
@@ -500,7 +509,7 @@ Data sinks
 & P3, P7
 & I2, I5 \\
 
-Monitoring and management across the lifecycle
+Monitoring and management
 & Lifecycle-wide observability and maintainability
 & RSK3, RSK4
 & R3, R4
@@ -511,6 +520,13 @@ Monitoring and management across the lifecycle
 \end{tabularx}
 \end{adjustwidth}
 \end{table}
+
+
+
+
+
+
+
 
 
 
@@ -690,6 +706,11 @@ Because the implemented system did not rely solely on final database status, the
 \end{figure}
 
 
+
+
+The subsequent diagnosis localized the main bottleneck not to parser failure or database loss, but to the LoRa communication-configuration layer. The problem that emerged was not a generic reduction in signal strength alone, but a network condition in which frequent periodic confirmed uplinks depended on downlink acknowledgements under limited active-channel availability. When acknowledgements were delayed or missed, retransmissions accumulated, channel contention increased, and reception became uneven across devices. In addition, stale device participation state in part of the fleet required rejoin recovery before stable collection could resume. The diagnosed issue was therefore a concrete reception bottleneck in the LoRa network path itself: ACK-dependent uplink behavior, limited effective channel use, and device-state instability were jointly degrading collection before downstream processing began.
+
+
 \begin{table}[H]
 \caption{Event counts across pipeline segments during reception degradation.\label{tab:segmentwise_event_counts}}
 \renewcommand{\arraystretch}{1.25}
@@ -733,22 +754,19 @@ DB-persisted events
 \end{table}
 
 
-
-The subsequent diagnosis localized the main bottleneck not to parser failure or database loss, but to the LoRa communication-configuration layer. The problem that emerged was not a generic reduction in signal strength alone, but a network condition in which frequent periodic confirmed uplinks depended on downlink acknowledgements under limited active-channel availability. When acknowledgements were delayed or missed, retransmissions accumulated, channel contention increased, and reception became uneven across devices. In addition, stale device participation state in part of the fleet required rejoin recovery before stable collection could resume. The diagnosed issue was therefore a concrete reception bottleneck in the LoRa network path itself: ACK-dependent uplink behavior, limited effective channel use, and device-state instability were jointly degrading collection before downstream processing began.
-
-Once the likely bottleneck had been localized, the response proceeded through targeted intervention rather than unguided trial and error. The main adjustments included reducing confirmed-mode dependence, expanding active channels, performing device rejoin, tuning transmission-related parameters, and refining monitoring intervals. After these adjustments, collection stability improved markedly. Packet reception increased from approximately 33\% to 95\%, daily persisted events rose from 15{,}870 to 45{,}600, extended no-data intervals decreased from about 18 cases per day to fewer than two, and average gap duration dropped from roughly 145 minutes to 18 minutes. The before--after time-series plots also show that dense missing segments visible before adjustment were substantially reduced afterward, while observation regularity and line-to-line consistency improved (Figure~\ref{fig:reception_stability}; Table~\ref{tab:reception_improvement_outcome}).
+Once the likely bottleneck had been localized, the response proceeded through targeted intervention rather than unguided trial and error. The main adjustments included reducing confirmed-mode dependence, expanding active channels, performing device rejoin, tuning transmission-related parameters, and refining monitoring intervals. After these adjustments, collection stability improved markedly. Packet reception increased from approximately 33\% to 95\%, daily persisted events rose from 15{,}870 to 45{,}600, extended no-data intervals decreased from about 18 cases per day to fewer than two, and average gap duration dropped from roughly 145 minutes to 18 minutes. The before--after time-series plots also show that dense missing segments visible before adjustment were substantially reduced afterward, while observation regularity and line-to-line consistency improved (Figure~\ref{fig:reception_stability}, Table~\ref{tab:reception_improvement_outcome}).
 
 The significance of this case extends beyond successful LoRa tuning. It shows, first, that R1 continuity was assessable in operational terms and that I1 durable capture could be examined through the degradation and recovery of the persisted record under severe field-side instability. Second, it shows that R3 diagnosability and I4 segment-localizable failure were realized through the comparison of expected transmissions, gateway-visible events, edge logs, ingest-stage records, and database persistence, which made the dominant discrepancy visible in the communication segment rather than only at the final database boundary. What this case demonstrates, therefore, is not simply that reception improved after adjustment, but that the implemented foundation made it possible to observe the failure as a structured operational discrepancy, to narrow it to a specific lifecycle segment, and to evaluate recovery within the same evidence framework. In that sense, the case provides a concrete field illustration of the framework's role in diagnosis and corrective improvement under constrained SME conditions.
 
 
-
+      
 \begin{figure}[H]
     \centering
     \subfloat[\centering\label{fig:reception_before}]{
-        \includegraphics[width=\linewidth]{figures/figure6_2_before_adjustment.png}
+        \includegraphics[width=\linewidth]{figures/before_adjustment.pdf}
     }\\[0.7em]
     \subfloat[\centering\label{fig:reception_after}]{
-        \includegraphics[width=\linewidth]{figures/figure6_2_after_adjustment.png}
+        \includegraphics[width=\linewidth]{figures/after_adjustment.pdf}
     }
     \caption{Reception stability across sensing points over time. (\textbf{a}) Before adjustment. (\textbf{b}) After adjustment.}
     \label{fig:reception_stability}
