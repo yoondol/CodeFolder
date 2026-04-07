@@ -263,9 +263,6 @@ Taken together, these risks show that a smart manufacturing data pipeline in con
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Operational Data Foundation Framework}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Framework Overview}
-
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{figures/Framework.pdf}
@@ -273,14 +270,12 @@ Taken together, these risks show that a smart manufacturing data pipeline in con
     \label{fig:4-1_framework}
 \end{figure}
 
-Section~3 showed that, in constrained SME factory environments, smart manufacturing data pipelines are exposed to recurring risks of continuity loss, semantic instability, weak diagnosability, operational burden, limited reprocessability, and poor evolvability. These risks indicate that the data layer cannot be treated merely as a transmission path or collection mechanism. Instead, what is needed is an explicit framework that defines what an operational data foundation must guarantee in order to remain viable under constrained deployment conditions.
-
-To address this need, this study proposes the \emph{Operational Data Foundation Framework}. As shown in Figure~\ref{fig:4-1_framework}, the framework is organized as a risk-to-design logic: \emph{operational risks} are translated into \emph{core requirements}; these requirements are realized through \emph{design principles}; and their realized state is assessed through \emph{operational invariants}. In this way, the framework translates the problem structure identified in Section~3 into an explicit and assessable basis for the design and evaluation of an operational data foundation.
+To respond to these risks, this study proposes the \emph{Operational Data Foundation Framework}. As shown in Figure~\ref{fig:4-1_framework}, the framework is organized as a risk-to-design logic. \emph{Operational risks} are translated into \emph{core requirements}, these requirements are realized through \emph{design principles}, and their fulfillment is assessed through \emph{operational invariants}. In this way, the framework provides an explicit and assessable basis for the design and evaluation of an operational data foundation under constrained deployment conditions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Core Requirements}
 
-The framework begins by defining the \emph{core requirements} of an operational data foundation. These requirements are not desirable properties in a general sense, but the minimum lifecycle-wide guarantees needed for operational viability under constrained SME factory conditions. They provide the basis for the design principles and operational invariants developed in the following subsections.
+The framework begins by defining the \emph{core requirements}. These requirements are not merely desirable properties in a general sense, but the minimum lifecycle-wide guarantees needed for operational viability under constrained SME factory conditions. They provide the basis for the design principles and operational invariants developed in the following subsections.
 
 Six core requirements are defined.
 
@@ -289,13 +284,13 @@ Six core requirements are defined.
 
     \item[\textbf{R2.}] \textbf{Governance.} Source identity, metric semantics, and time semantics should remain stable across collection, normalization, and storage. Data are not operationally usable merely because they exist; they must retain controlled meaning and interpretable context throughout the pipeline.
 
-    \item[\textbf{R3.}] \textbf{Diagnosability.} Failures should be observable as segment-level discrepancies rather than only as end-to-end symptoms. The requirement is not simply that problems become visible after damage appears downstream, but that the lifecycle location and mode of failure can be identified in a structurally interpretable way.
+    \item[\textbf{R3.}] \textbf{Diagnosability.} Failures should be observable as segment-level discrepancies rather than only as end-to-end symptoms. The requirement is not simply that problems become visible after downstream effects appear, but that the lifecycle location and mode of failure can be identified in a structurally interpretable manner.
 
-    \item[\textbf{R4.}] \textbf{Operability.} The system should remain maintainable and manageable under constrained staffing and budget conditions. An operational data foundation must therefore be sustainable in day-to-day practice without imposing structurally excessive maintenance burden or operational complexity.
+    \item[\textbf{R4.}] \textbf{Operability.} The system should remain maintainable and manageable under constrained staffing and budget conditions. An operational data foundation must therefore be sustainable in day-to-day practice without imposing a structurally excessive maintenance burden or operational complexity.
 
-    \item[\textbf{R5.}] \textbf{Reprocessability.} Historical data should remain reprocessable for rule changes, KPI revisions, correction, and recovery. Manufacturing data should not be treated as one-time consumables, but as records that can be read again, recalculated, and reinterpreted when operational needs evolve.
+    \item[\textbf{R5.}] \textbf{Reprocessability.} Historical data should remain reprocessable for rule changes, KPI revisions, correction, and recovery. Manufacturing data should not be treated as one-time consumables, but as records that can be revisited, recalculated, and reinterpreted as operational needs evolve.
 
-    \item[\textbf{R6.}] \textbf{Evolvability.} The foundation should accommodate new sources, processes, sites, and applications without breaking the existing structure. Since SME digitalization typically proceeds through incremental onboarding rather than one-time integration, the data foundation must remain structurally open to change and extension.
+    \item[\textbf{R6.}] \textbf{Evolvability.} The foundation should accommodate new sources, processes, sites, and applications without breaking the existing structure. Because SME digitalization typically proceeds through incremental onboarding rather than one-time integration, the data foundation must remain structurally open to change and extension.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -304,40 +299,40 @@ Six core requirements are defined.
 The core requirements defined above specify what the operational data foundation must guarantee, but not how those guarantees should be realized in design. This subsection therefore presents the key \emph{design principles} that translate those requirements into a workable design logic for constrained SME factory conditions. Rather than prescribing specific technologies or implementation choices, these principles define the structural directions needed to sustain the required operational guarantees.
 
 \begin{itemize}
-    \item[\textbf{P1.}] \textbf{Continuity responsibility should be placed close to the source.} If continuity depends primarily on downstream transmission or cloud reachability, it becomes fragile under field disruption and connectivity instability. For this reason, the first responsibility for preserving continuity should be located as close to the source as possible through source-near capture, upstream buffering or persistence, and recovery-oriented ingestion logic.
+    \item[\textbf{P1.}] \textbf{Continuity responsibility should be placed close to the source.} If continuity depends primarily on downstream transmission or cloud reachability, it becomes fragile under field disruption and connectivity instability. For this reason, the primary responsibility for preserving continuity should be placed as close to the source as possible through source-near capture, upstream buffering or persistence, and recovery-oriented ingestion logic.
 
-    \item[\textbf{P2.}] \textbf{Raw events should be preserved before abstraction.} If only transformed outputs are retained, later replay, reinterpretation, and recovery become structurally limited. The preservation of raw events before irreversible abstraction is therefore a fundamental design principle, since rule changes, KPI revision, and correction all depend on access to preserved pre-abstraction records.
+    \item[\textbf{P2.}] \textbf{Raw events should be preserved before abstraction.} If only transformed outputs are retained, later replay, reinterpretation, and recovery become structurally constrained. Preserving raw events before irreversible abstraction is therefore a fundamental design principle, since rule changes, KPI revision, and correction all depend on access to preserved pre-abstraction records.
 
-    \item[\textbf{P3.}] \textbf{Semantics should be contract-defined.} If source identity, metric naming, timestamp semantics, unit definition, and transformation logic are left to ad hoc implementation, semantic inconsistency accumulates across the pipeline. The design must therefore define semantics explicitly through controlled contracts, schema discipline, version-aware rules, and clear identity and time conventions.
+    \item[\textbf{P3.}] \textbf{Semantics should be contract-defined.} If source identity, metric naming, timestamp semantics, unit definition, and transformation logic are left to ad hoc implementation, semantic inconsistency accumulates across the pipeline. The design must therefore define semantics explicitly through controlled contracts, schema discipline, version-aware rules, and clear conventions for identity and time.
 
-    \item[\textbf{P4.}] \textbf{Observability should follow pipeline segments.} Diagnosability cannot be secured through black-box end-to-end monitoring alone, because operationally meaningful failures must be localizable to specific lifecycle segments. Observability should therefore be structured along the pipeline itself through segment-wise checkpoints, stage-level indicators, and explicit discrepancy visibility.
+    \item[\textbf{P4.}] \textbf{Observability should follow pipeline segments.} Diagnosability cannot be secured through black-box end-to-end monitoring alone, because operationally meaningful failures must be localizable to specific lifecycle segments. Observability should therefore be structured along the pipeline itself through segment-level checkpoints, stage-level indicators, and explicit discrepancy visibility.
 
     \item[\textbf{P5.}] \textbf{Responsibilities should be separated by function.} If acquisition, normalization, storage, and downstream use are tightly coupled, both maintenance burden and change cost rise rapidly. Functional responsibilities should therefore be separated so that components remain structurally independent, interfaces remain replaceable, and modifications in one part do not unnecessarily destabilize the whole.
 
     \item[\textbf{P6.}] \textbf{Operations should remain lightweight, modular, and open.} In constrained SME environments, heavy operational structures, costly maintenance models, and vendor dependence undermine long-term viability. The design should therefore remain lightweight in deployment, modular in composition, manageable in maintenance scope, and open to replacement and extension. Where appropriate, open and widely supported components, including open-source tools, can help reduce lock-in and maintenance burden.
     
-    \item[\textbf{P7.}] \textbf{Change should be treated as a first-class assumption.} Changes in KPIs, schemas, rules, source onboarding, and deployment scope are not exceptional events but normal operating conditions in SME digitalization. The foundation should therefore be designed from the outset to tolerate and organize change through version-aware structures, replay support, incremental onboarding discipline, and change-tolerant interfaces.
+    \item[\textbf{P7.}] \textbf{Change should be treated as a first-class assumption.} Changes in KPIs, schemas, rules, source onboarding, and deployment scope are not exceptional events, but normal operating conditions in SME digitalization. The foundation should therefore be designed from the outset to accommodate and organize change through version-aware structures, replay support, incremental onboarding discipline, and change-tolerant interfaces.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Operational Invariants}
 
-The core requirements and design principles defined above specify what the operational data foundation must guarantee and how those guarantees should be realized. This subsection completes the framework by defining the \emph{operational invariants}: the persistent conditions that should hold if the foundation is functioning as intended.
+The core requirements and design principles defined above specify what the operational data foundation must guarantee and how those guarantees should be realized. This subsection completes the framework by defining the \emph{operational invariants}, that is, the persistent conditions that should hold if the foundation is functioning as intended.
 
 \begin{itemize}
-    \item[\textbf{I1.}] \textbf{Durable Capture Invariant.} An accepted event should obtain durable persistence before downstream failure can erase it. Continuity should therefore be judged from the point of first durable capture rather than from downstream availability alone.
+    \item[\textbf{I1.}] \textbf{Durable Capture Invariant.} An accepted event should obtain durable persistence before any downstream failure can erase it. Continuity should therefore be judged from the point of first durable capture rather than from downstream availability alone.
 
-    \item[\textbf{I2.}] \textbf{Traceability Invariant.} Every canonical or stored record should remain traceable to its source identity and operational context. Downstream data should not become detached from the source, metadata, and governing semantics that give it meaning.
+    \item[\textbf{I2.}] \textbf{Traceability Invariant.} Every canonical or stored record should remain traceable to its source identity and operational context. Downstream data should not become detached from the source, metadata, and governing semantics that give them meaning.
 
     \item[\textbf{I3.}] \textbf{Deterministic Normalization Invariant.} The same raw event under the same contract and version conditions should always produce the same canonical output. Normalization should function as a repeatable and controlled semantic transformation rather than as ad hoc interpretation.
 
-    \item[\textbf{I4.}] \textbf{Segment-Localizable Failure Invariant.} A failure should become visible as at least one discrepancy within a recognizable lifecycle segment. It should be possible to attribute the problem to a specific segment such as source, transmission, preprocessing, loading, storage, or sink rather than observing it only as a downstream symptom.
+    \item[\textbf{I4.}] \textbf{Segment-Localizable Failure Invariant.} A failure should become visible as at least one discrepancy within a recognizable lifecycle segment. It should be possible to attribute the problem to a specific segment, such as the source, transmission, preprocessing, loading, storage, or sink, rather than observing it only as a downstream symptom.
 
-    \item[\textbf{I5.}] \textbf{Replayability Invariant.} Preserved raw data should remain reprocessable for rule changes, KPI revision, correction, and recovery. Historical data should therefore remain usable for later reinterpretation and recomputation rather than serving only as passive archive material.
+    \item[\textbf{I5.}] \textbf{Replayability Invariant.} Preserved raw data should remain reprocessable for rule changes, KPI revision, correction, and recovery. Historical data should therefore remain usable for later reinterpretation and recomputation, rather than serving only as passive archival material.
 
     \item[\textbf{I6.}] \textbf{Modular Replacement Invariant.} Replacing a specific component should not break the semantic chain of the overall foundation. Changes in storage, parsing, transport, or downstream components should not destroy source identity, metric meaning, or replay context across the system.
 
-    \item[\textbf{I7.}] \textbf{Onboarding Consistency Invariant.} A new source should be incorporable into the existing structure without breaking the prevailing governance discipline. Incremental onboarding should proceed through the same contract, schema, naming, and validation discipline rather than through an accumulation of ad hoc exceptions.
+    \item[\textbf{I7.}] \textbf{Onboarding Consistency Invariant.} A new source should be incorporable into the existing structure without breaking the prevailing governance discipline. Incremental onboarding should proceed through the same contract, schema, naming, and validation discipline, rather than through an accumulation of ad hoc exceptions.
 \end{itemize}
 
 These invariants define the persistent conditions by which the framework can be assessed in practice. If requirements declare the guarantees to be achieved and principles define the design logic needed to achieve them, invariants provide the basis for evaluating whether those guarantees remain structurally preserved.
@@ -345,10 +340,9 @@ These invariants define the persistent conditions by which the framework can be 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Framework Synthesis}
 
-This subsection synthesizes the framework by reconnecting it to the problem space analyzed in Section~3. Section~3 showed how constrained SME factory conditions destabilize the general data pipeline lifecycle and generate recurring risks of continuity, governance, diagnosability, operability, reprocessability, and evolvability. Sections~4.1--4.3 translated those risks into core requirements, design principles, and operational invariants. The purpose here is to clarify how these layers are systematically linked to the original problem structure.
+This subsection synthesizes the framework by reconnecting it to the problem space analyzed in Section~3. Section~3 showed how constrained SME factory conditions destabilize the general data pipeline lifecycle and generate recurring risks related to continuity, governance, diagnosability, operability, reprocessability, and evolvability. Sections~4.1--4.3 then translated those risks into core requirements, design principles, and operational invariants. The purpose of this subsection is to clarify how these layers are systematically linked to the underlying problem structure.
 
-Table~\ref{tab:constraint_design_logic} provides this first synthesis. It shows that constrained SME conditions are not merely a list of deployment difficulties, but recurring operational design problems that can be translated in a structured way. Each major constraint category gives rise to one or more operational risks; each risk is then expressed as a core requirement, translated into one or more design principles, and made assessable through corresponding invariants. The table thus shows how the framework is grounded in recurring structural problems in constrained SME manufacturing.
-
+Table~\ref{tab:constraint_design_logic} provides the first synthesis. It shows that constrained SME conditions are not merely a list of deployment difficulties, but recurring operational design problems that can be translated systematically. Each major constraint category gives rise to one or more operational risks; each risk is then expressed as a core requirement, translated into one or more design principles, and made assessable through corresponding invariants. In this way, the table shows how the framework is grounded in recurring structural problems in constrained SME manufacturing.
 
 
 \begin{table}[H]
@@ -434,9 +428,9 @@ Budget sensitivity and lock-in concerns
 
 
 
-One particularly important translation highlighted in Table~\ref{tab:constraint_design_logic} is the movement from semantic and interface heterogeneity to governance logic. In constrained SME factories, heterogeneous devices, mixed protocols, fragmented interfaces, add-on sensing, and manual records do not merely create diverse formats; they destabilize source identity, metric meaning, unit interpretation, and timestamp semantics. The issue is therefore not simply one of integration, but one of governance. For this reason, the framework connects this problem to \emph{R2 Governance}, \emph{P3 contract-defined semantics}, and the assessable conditions of \emph{I2 Traceability} and \emph{I3 Deterministic Normalization}. This translation makes clear that manufacturing data become operationally reliable only when meaning and origin remain stably governed.
+One particularly important translation highlighted in Table~\ref{tab:constraint_design_logic} is the shift from semantic and interface heterogeneity to governance logic. Here, the central issue is not merely integration, but the need to keep source identity, metric meaning, unit interpretation, and timestamp semantics stable across the pipeline. The framework therefore links this problem to \emph{R2 Governance}, \emph{P3 contract-defined semantics}, and the assessable conditions of \emph{I2 Traceability} and \emph{I3 Deterministic Normalization}. This translation makes clear that manufacturing data become operationally reliable only when meaning and origin remain stably governed.
 
-A second important translation concerns the movement from change pressure to reprocessability and evolvability logic. SME digitalization rarely proceeds as a one-time integration event; instead, KPI definitions evolve, schemas change, new sensors and lines are added, and operational rules are revised over time. When such change is not treated as a normal operating condition, transformed-only persistence and weak lineage make past data difficult to reinterpret and new sources difficult to onboard without exception-heavy modification. The framework therefore connects this problem to \emph{R5 Reprocessability} and \emph{R6 Evolvability}, supported by \emph{P7 change as a first-class assumption} and assessed through \emph{I5 Replayability} and \emph{I7 Onboarding Consistency}. This shows that the framework is designed not only for present-time correctness, but also for preserving operational coherence under future change.
+A second important translation concerns the shift from change pressure to reprocessability and evolvability logic. Here, the central issue is whether the foundation can remain coherent as KPIs, schemas, sources, and operational rules evolve over time. The framework therefore links this problem to \emph{R5 Reprocessability} and \emph{R6 Evolvability}, supported by \emph{P7 change as a first-class assumption} and assessed through \emph{I5 Replayability} and \emph{I7 Onboarding Consistency}. This shows that the framework is designed not only for present-time correctness, but also to preserve operational coherence under future change.
 
 Table~\ref{tab:lifecycle_foundation_logic} provides a second synthesis by showing how the framework adds operational meaning to the general data pipeline lifecycle. Under constrained SME conditions, each lifecycle stage must contribute not only to data movement and processing, but also to the guarantees defined by the operational data foundation. The table makes this added meaning explicit by connecting each stage to the relevant risks, requirements, design principles, and invariants. In this way, the general lifecycle is retained as an analytical reference, while its role is sharpened for constrained manufacturing conditions.
 
@@ -520,20 +514,9 @@ Monitoring and management
 
 
 
+One especially revealing example is the reinterpretation of the transmission stage. In generic pipeline discussions, transmission is often treated as a routine internal link between ingestion and subsequent processing. In constrained SME factory conditions, however, the path from field devices to gateways, edge systems, servers, and cloud systems is often exposed to intermittent connectivity, limited bandwidth, battery constraints, delayed recovery, and relay dependence. Transmission therefore becomes a distinct operational segment in which continuity and diagnosability are directly tested. For this reason, Table~\ref{tab:lifecycle_foundation_logic} assigns the transmission stage the added meanings of recoverable transfer and segment-aware discrepancy visibility, linking it to \emph{R1 Continuity}, \emph{R3 Diagnosability}, \emph{P1 source-near continuity}, \emph{P4 segment-based observability}, \emph{I1 Durable Capture}, and \emph{I4 Segment-Localizable Failure}.
 
-
-
-
-
-
-
-One especially revealing example is the reinterpretation of the transmission stage. In generic pipeline discussions, transmission is often treated as a routine internal link between ingestion and later processing. In constrained SME factory conditions, however, the path from field devices to gateways, edge systems, servers, and cloud systems is often exposed to intermittent connectivity, limited bandwidth, battery constraints, delayed recovery, and relay dependence. Transmission therefore becomes a distinct operational segment in which continuity and diagnosability are directly tested. For this reason, Table~\ref{tab:lifecycle_foundation_logic} assigns the transmission stage the added meanings of recoverable transfer and segment-aware discrepancy visibility, linking it to \emph{R1 Continuity}, \emph{R3 Diagnosability}, \emph{P1 source-near continuity}, \emph{P4 segment-based observability}, \emph{I1 Durable Capture}, and \emph{I4 Segment-Localizable Failure}.
-
-Taken together, Table~\ref{tab:constraint_design_logic} translates constrained SME conditions into operational design logic, while Table~\ref{tab:lifecycle_foundation_logic} shows how that logic refines the interpretation of the general data pipeline lifecycle under real manufacturing constraints. The result is a single analytical structure that connects problem space, framework logic, and lifecycle interpretation. This synthesis also provides the basis for reading the field implementation in Section~5 and the evidence assessment in Section~6.
-
-
-
-
+Taken together, Table~\ref{tab:constraint_design_logic} translates constrained SME conditions into operational design logic, while Table~\ref{tab:lifecycle_foundation_logic} shows how that logic refines the interpretation of the general data pipeline lifecycle under real manufacturing constraints. The result is a single analytical structure that connects the problem space, framework logic, and lifecycle interpretation. This synthesis also provides the basis for reading the field implementation in Section~5 and the evidence-based assessment in Section~6.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
