@@ -43,7 +43,7 @@
 
 %=================================================================
 % Full title of the paper (Capitalized)
-\Title{Operational Data Foundation Framework for SME Smart Manufacturing: Field Implementation and Evidence}
+\Title{Operational Data Foundation Framework for Smart Manufacturing in SMEs: Field Implementation and Evaluation}
 
 % Author Orchid ID: enter ID or remove command
 \newcommand{\orcidauthorA}{0009-0003-4190-193X}
@@ -110,7 +110,7 @@ What is required, therefore, is not merely an ingestion infrastructure, but an o
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\textwidth]{figures/1-2_Data_Froundation.png}
+    \includegraphics[width=\textwidth]{figures/Data_Foundation.pdf}
     \caption{Position of the operational data foundation in a digitalized manufacturing system.}
     \label{fig:odf_position}
 \end{figure}
@@ -193,7 +193,7 @@ This section analyzes the data basis of smart manufacturing as an operational pi
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{figures/3-1_Data_Lifecycle.png}
+    \includegraphics[width=1\linewidth]{figures/3-1_Data_Lifecycle.pdf}
     \caption{General data pipeline lifecycle in smart manufacturing.}
     \label{fig:data_lifecycle}
 \end{figure}
@@ -221,7 +221,7 @@ This lifecycle is analytically useful because it makes visible the full path thr
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{figures/3-2_Data_Lifecycle.png}
+    \includegraphics[width=1\linewidth]{figures/3-2_Data_Lifecycle.pdf}
     \caption{SME constraints across the general data pipeline lifecycle.}
     \label{fig:3-2_data_lifecycle}
 \end{figure}
@@ -272,7 +272,7 @@ Taken together, these risks show that a smart manufacturing data pipeline in con
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{figures/4-1_Framework.png}
+    \includegraphics[width=1\linewidth]{figures/Framework.pdf}
     \caption{Operational Data Foundation Framework.}
     \label{fig:4-1_framework}
 \end{figure}
@@ -545,7 +545,7 @@ Accordingly, the role of Idang Food in this study was twofold. At the factory le
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{figures/5-1_Factory.png}
+    \includegraphics[width=1\linewidth]{figures/Factory.pdf}
     \caption{Factory layout with representative sensing and edge deployment.}
     \label{fig:5-1_factory}
 \end{figure}
@@ -556,7 +556,7 @@ Accordingly, the role of Idang Food in this study was twofold. At the factory le
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{figures/edge.png}
+    \includegraphics[width=1\linewidth]{figures/Edge_Architecture.pdf}
     \caption{Edge architecture for field data acquisition.}
     \label{fig:edge}
 \end{figure}
@@ -577,14 +577,14 @@ Once accepted and retained at the edge, the records were forwarded by producer s
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{figures/cloud_architecture.png}
+    \includegraphics[width=1\linewidth]{figures/Cloud_Architecture.pdf}
     \caption{Cloud-side processing architecture.}
     \label{fig:cloud_architecture}
 \end{figure}
 
 On top of the field acquisition layer, the system implemented a cloud-side processing path that received raw events from factory edges, routed them through a brokered stream architecture, and transformed them into persistent and service-ready records. Multiple factory-originated event streams were forwarded to the AWS cloud and published into Kafka topics in the MSK cluster, where subsequent stages handled normalization, derivation, persistence, and operational consumption. Figure~\ref{fig:cloud_architecture} presents this deployment-level structure by showing how data from multiple factories converged into the shared AWS-based cloud environment and entered a common brokered processing path. In this way, the cloud layer served not as a single application endpoint, but as a staged processing structure connecting multi-factory intake to downstream use.
 
-Within this cloud path, raw factory events first entered broker topics such as \texttt{sensor.env.raw}, \texttt{sensor.scale.raw}, and \texttt{machine.raw}. These raw topics were consumed by the parser stream, which decoded heterogeneous payloads, mapped sources, unified metrics, normalized timestamps, applied deduplication, and produced canonical events for downstream use. On top of this normalized stream, KPI processing and alert-side consumption proceeded as separate downstream paths: KPI streams generated derived indicators such as production quantity and yield, while alert consumers used the same governed event basis to detect conditions requiring notification or intervention. Finally, ingest consumers persisted the normalized and derived outputs into the database layer for later dashboard, alert, and analytical use. Figure~\ref{fig:cloud_components} clarifies this processing sequence by showing how the input and output of each stage changed as raw messages were progressively transformed into reusable operational records.
+Within this cloud path, raw factory events first entered broker topics such as \texttt{sensor.env.raw}, \texttt{sensor.scale.raw}, and \texttt{machine.raw}. These raw topics were consumed by the parser stream, which decoded heterogeneous payloads, mapped sources, unified metrics, normalized timestamps, applied deduplication, and produced canonical events for downstream use. On top of this normalized stream, KPI processing and alert-side consumption proceeded as separate downstream paths: KPI streams generated derived indicators such as production quantity and yield, while alert consumers used the same governed event basis to detect conditions requiring notification or intervention. Finally, ingest consumers persisted the normalized and derived outputs into the database layer for later dashboard, alert, and analytical use. In this way, the cloud path functioned as a staged transformation flow through which heterogeneous raw messages were converted into governed and reusable operational records.
 
 A central design objective of this layer was functional decoupling. Factory-side producers were allowed to publish raw events to the broker without depending directly on parser execution, KPI computation, alert handling, or database ingestion. This separation reduced failure propagation across stages and made the system easier to modify as rules, sources, and downstream requirements evolved. In practical terms, the broker layer provided the shared event boundary through which intake, interpretation, derivation, persistence, and service consumption could remain structurally separated.
 
@@ -595,52 +595,6 @@ After canonicalization, KPI computation was intentionally performed in the strea
 Persistent storage was handled through ingest consumers. These consumers received already normalized or derived events and wrote them into the database without reintroducing business logic at the persistence boundary. As a result, semantic interpretation remained in the parser layer, derived computation remained in the KPI stream, alert-side reaction remained in dedicated consumers, and the storage path remained focused on durable append-oriented persistence. This responsibility split made the cloud-side stack easier to reason about and more robust to later changes in processing rules or downstream interfaces.
 
 Taken together, the cloud-side processing path completed the second half of the operational data foundation. If the field edge established source-near acceptance and local durability, the cloud layer provided brokered multi-factory intake, governed normalization, separated derivation and alert handling, and service-ready persistence. The result was a processing architecture that did not expose raw heterogeneous payloads directly to downstream services, but converted them into controlled operational records that could support dashboards, alerts, traceability, and future analytical extension.
-
-
-\begin{table}[H]
-\caption{Cloud-side components and responsibilities.\label{tab:cloud_components_responsibilities}}
-\begin{tabularx}{\textwidth}{
->{\raggedright\arraybackslash}X
->{\raggedright\arraybackslash}X
->{\raggedright\arraybackslash}X
->{\raggedright\arraybackslash}X}
-\toprule
-\textbf{Component} & \textbf{Input} & \textbf{Output} & \textbf{Primary responsibility} \\
-\midrule
-
-Producer
-& Edge-side records/messages
-& Raw topics
-& Forward field data to the cloud event flow \\
-
-Parser stream
-& Raw topics
-& Canonical events
-& Decode, normalize, map sources, and standardize events \\
-
-KPI stream
-& Canonical events
-& KPI events
-& Derive production- and process-level indicators \\
-
-Ingest consumer
-& Canonical events, KPI events
-& Database records
-& Persist processed events without adding business logic \\
-
-Database
-& Ingested records
-& Queryable tables/views
-& Provide persistent storage for dashboards, alerts, and analysis \\
-
-Dashboard/alert layer
-& Stored and derived data
-& Operational interfaces
-& Present status, alarms, and management views \\
-
-\bottomrule
-\end{tabularx}
-\end{table}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -721,15 +675,19 @@ Taken together, the evidence above indicates that the proposed framework was rea
 \subsection{Operational Case: LoRa Reliability Improvement}
 
 
-
-
-
 A field data foundation does not remain operationally reliable simply because it has once been installed. In practice, reception quality, device condition, battery state, wireless configuration, and usage patterns continue to change over time. For this reason, the value of the proposed framework lies not in whether it delivered perfect behavior from the outset, but in whether emerging failures could be detected, localized, and corrected in an operationally meaningful way. This subsection presents a representative field case in which severe reception degradation in periodic uplink collection was diagnosed and improved within the implemented foundation.
 
 During the early operation period, plant-wide periodic collection failed to sustain its expected level. Reception across multiple monitored sensor sets dropped to roughly 33\%, daily persisted events were 15{,}870 out of an expected 48{,}000, and repeated no-data intervals of 2--5 hours appeared in several monitored intervals. This was not merely a matter of lower communication quality. It directly weakened line-level visibility, reduced confidence in dashboard and alert outputs, and undermined the continuity of the operational record on which later interpretation depended.
 
-Because the implemented system did not rely solely on final database status, the degradation could be interpreted as a segment-wise discrepancy rather than as a vague end-to-end symptom. Scheduled transmissions, gateway-visible events, edge/local logs, ingest-stage counts, and database persistence counts could be examined together. As summarized in Table~\ref{tab:segmentwise_event_counts}, the main loss had already occurred before parsing and database persistence: in a representative 24-hour window, only about 16{,}400 events were visible at the gateway, whereas downstream retention from gateway-visible events to database persistence remained consistently high at roughly 98--99\%. This pattern indicated that the dominant loss was occurring before the parser and database layer, making the collection and communication segment the primary locus of investigation.
+Because the implemented system did not rely solely on final database status, the degradation could be interpreted as a segment-wise discrepancy rather than as a vague end-to-end symptom. Expected transmissions, gateway-visible events, edge/local logs, ingest-stage counts, and database persistence counts could be examined together. Figure~\ref{fig:failure_localization} summarizes this diagnostic logic as a sequence of adjacent-stage discrepancy checks, in which the first substantial gap indicates the most likely failure boundary. As shown by the actual segment-wise counts in Table~\ref{tab:segmentwise_event_counts}, the main loss had already occurred before parsing and database persistence: in a representative 24-hour window, only about 16{,}400 events were visible at the gateway, whereas downstream retention from gateway-visible events to database persistence remained consistently high at roughly 98--99\%. This observed pattern indicated that the dominant loss was occurring before the parser and database layer, making the collection and communication segment the primary locus of investigation.
 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{figures/failure_localization.pdf}
+    \caption{Segment-wise failure localization through adjacent-stage discrepancy checks.}
+    \label{fig:failure_localization}
+\end{figure}
 
 
 \begin{table}[H]
@@ -744,7 +702,7 @@ Because the implemented system did not rely solely on final database status, the
 \textbf{Stage / Metric} & \textbf{Expected} & \textbf{Observed} & \textbf{Ratio (\%)} \\
 \midrule
 
-Scheduled transmissions
+Expected transmissions
 & 48{,}000
 & --
 & -- \\
@@ -759,7 +717,7 @@ Edge/local logged events
 & 16{,}120
 & 98.3 \\
 
-Ingested events
+Parsed/Ingested events
 & 16{,}120
 & 15{,}980
 & 99.1 \\
@@ -780,7 +738,7 @@ The subsequent diagnosis localized the main bottleneck not to parser failure or 
 
 Once the likely bottleneck had been localized, the response proceeded through targeted intervention rather than unguided trial and error. The main adjustments included reducing confirmed-mode dependence, expanding active channels, performing device rejoin, tuning transmission-related parameters, and refining monitoring intervals. After these adjustments, collection stability improved markedly. Packet reception increased from approximately 33\% to 95\%, daily persisted events rose from 15{,}870 to 45{,}600, extended no-data intervals decreased from about 18 cases per day to fewer than two, and average gap duration dropped from roughly 145 minutes to 18 minutes. The before--after time-series plots also show that dense missing segments visible before adjustment were substantially reduced afterward, while observation regularity and line-to-line consistency improved (Figure~\ref{fig:reception_stability}; Table~\ref{tab:reception_improvement_outcome}).
 
-The significance of this case extends beyond successful LoRa tuning. It shows, first, that R1 continuity was assessable in operational terms and that I1 durable capture could be examined through the degradation and recovery of the persisted record under severe field-side instability. Second, it shows that R3 diagnosability and I4 segment-localizable failure were realized through the comparison of scheduled transmissions, gateway-visible events, edge logs, ingest-stage records, and database persistence, which made the dominant discrepancy visible in the communication segment rather than only at the final database boundary. What this case demonstrates, therefore, is not simply that reception improved after adjustment, but that the implemented foundation made it possible to observe the failure as a structured operational discrepancy, to narrow it to a specific lifecycle segment, and to evaluate recovery within the same evidence framework. In that sense, the case provides a concrete field illustration of the framework's role in diagnosis and corrective improvement under constrained SME conditions.
+The significance of this case extends beyond successful LoRa tuning. It shows, first, that R1 continuity was assessable in operational terms and that I1 durable capture could be examined through the degradation and recovery of the persisted record under severe field-side instability. Second, it shows that R3 diagnosability and I4 segment-localizable failure were realized through the comparison of expected transmissions, gateway-visible events, edge logs, ingest-stage records, and database persistence, which made the dominant discrepancy visible in the communication segment rather than only at the final database boundary. What this case demonstrates, therefore, is not simply that reception improved after adjustment, but that the implemented foundation made it possible to observe the failure as a structured operational discrepancy, to narrow it to a specific lifecycle segment, and to evaluate recovery within the same evidence framework. In that sense, the case provides a concrete field illustration of the framework's role in diagnosis and corrective improvement under constrained SME conditions.
 
 
 
