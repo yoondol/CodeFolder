@@ -73,11 +73,11 @@ $^{2}$ \quad Department of Industrial Security, Chung-Ang University, Seoul 0697
 
 % Abstract (Do not insert blank lines, i.e. \\) 
 \abstract{
-Smart manufacturing increasingly depends on continuous and usable operational data, yet in constrained small and medium-sized enterprise (SME) factories, the practical bottleneck often lies not in downstream analytics or AI applications but in the absence of an operationally viable data foundation. This study addresses that problem by proposing an \emph{Operational Data Foundation Framework} for constrained SME manufacturing environments. The framework is derived from a lifecycle-based problem analysis and formalizes six core requirements: continuity, governance, diagnosability, operability, reprocessability, and evolvability. These requirements are further translated into design principles and operational invariants, thereby providing a structured basis for both design and assessment. To examine its field relevance, the framework was instantiated in a real SME deployment involving heterogeneous environmental sensors, a retrofitted legacy scale, LoRa-based field communication, edge-side persistence, cloud-side stream processing, and a governed canonical event model. The evaluation was conducted from the perspective of operational viability rather than benchmark performance alone. Requirement-based evidence showed that the implemented system preserved controlled semantics, supported segmented observability, maintained replayable historical records, and remained manageable under constrained deployment conditions. A representative field case further demonstrated the framework’s practical value: LoRa reception instability was diagnosed through segment-wise discrepancy analysis and improved from approximately 33\% to 95\% packet reception after targeted intervention. The study contributes a field-grounded design logic for operational data systems that can support monitoring, traceability, analytics, alerting, and future extensions in digitally constrained manufacturing settings.
+Smart manufacturing depends on operational data that remain continuous, interpretable, and reusable in practice. In constrained small and medium-sized enterprise (SME) factories, however, the main bottleneck often lies not in later-stage analytics or AI applications, but in securing an operationally viable data foundation under real deployment conditions. A lifecycle-based analysis of smart manufacturing data pipelines, together with recurrent SME deployment constraints identified in prior studies, led this study to derive six recurring operational risks. On that basis, the study proposes an \emph{Operational Data Foundation Framework} structured around core requirements of continuity, governance, diagnosability, operability, reprocessability, and evolvability. These requirements are further articulated through design principles and assessable operational invariants. The framework was instantiated in a real SME factory, where heterogeneous field sources were integrated into a coherent operational data foundation for smart manufacturing through constrained communication paths, durable edge-side capture, cloud-side stream processing, controlled data normalization, and monitoring and alerting functions. Requirement-based evidence from the field implementation showed that the system preserved stable semantics across the pipeline, made failures traceable to specific lifecycle segments, preserved historical records for later reprocessing, and remained manageable under constrained deployment conditions. A representative field case further demonstrated the framework's practical value: severe communication instability was diagnosed through lifecycle-segment discrepancy analysis and improved from approximately 33\% to 95\% packet reception after targeted intervention. The study contributes a field-grounded and assessable design logic for making smart manufacturing practically achievable in constrained SME factories.
 }
 
 % Keywords
-\keyword{smart manufacturing; SME digitalization; industrial data infrastructure; data governance; edge–cloud architecture} 
+\keyword{smart manufacturing; SME digitalization; operational data foundation; industrial data infrastructure; data governance} 
 
 %(List three to ten pertinent keywords specific to the article; yet reasonably common within the subject discipline.)
 
@@ -97,6 +97,7 @@ Smart manufacturing increasingly depends on continuous and usable operational da
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+\label{sec:introduction}
 
 Smart manufacturing is transforming manufacturing from a production environment centered primarily on physical equipment and isolated processes into a connected operational system built on continuous data flows \cite{song2025smart,tao2018datadriven}. Across the factory, sensing, communication, computation, and decision making are becoming increasingly integrated through technologies such as the Internet of Things (IoT), cyber--physical systems (CPS), artificial intelligence and machine learning (AI/ML), real-time monitoring, predictive maintenance, and digital twins \cite{tao2017digital,ding2019digital,nguyen2025aidriven}. Manufacturing systems should therefore be understood not only as physical production arrangements, but also as data-mediated operational systems \cite{cerquitelli2021manufacturing}.
 
@@ -146,15 +147,17 @@ The primary contributions of this research are as follows:
     \item Demonstrating the framework's field-grounded operational relevance through real-world implementation in an SME manufacturing environment.
 \end{enumerate}
 
-The remainder of this paper is organized as follows. Section~2 reviews the related literature. Section~3 analyzes the general data pipeline lifecycle, SME-specific constraints, and the resulting operational risks. Section~4 presents the proposed Operational Data Foundation Framework. Section~5 describes the field implementation in an SME manufacturing setting. Section~6 evaluates the framework using requirement-based evidence and field observations. Finally, Section~7 concludes the paper.
+The remainder of this paper is organized as follows. Section~\ref{sec:related_work} reviews the related literature. Section~\ref{sec:problem_analysis} analyzes the general data pipeline lifecycle, SME-specific constraints, and the resulting operational risks. Section~\ref{sec:odff} presents the proposed Operational Data Foundation Framework. Section~\ref{sec:field_implementation} describes the field implementation in an SME manufacturing setting. Section~\ref{sec:framework_evaluation} evaluates the framework using requirement-based evidence and field observations. Finally, Section~\ref{sec:conclusion} concludes the paper.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Work}
+\label{sec:related_work}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Smart Manufacturing Applications}
+\label{sec:smart_manufacturing_applications}
 
 Smart manufacturing research has developed primarily around higher-level applications and intelligent capabilities, including industrial IoT, cyber--physical systems, digital twins, real-time monitoring, predictive maintenance, and AI/ML-enabled decision making \cite{rozhok2026advanced, bueno2020smart, cinar2020digital, atalay2022digital}. Across these streams, the dominant aim has been to make manufacturing systems more connected, adaptive, and data-driven through enhanced visibility, prediction, and control \cite{rozhok2026advanced, bueno2020smart, song2025smart}.
 
@@ -162,6 +165,7 @@ Despite their diversity, these applications share a common prerequisite: continu
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Industrial Data Infrastructures}
+\label{sec:industrial_data_infrastructures}
 
 A substantial body of research has examined the industrial data basis through manufacturing data pipelines, integration architectures, industrial data management systems, and edge--cloud infrastructures \cite{ismail2019manufacturing, raptis2019data, saqlain2019framework}. This literature makes clear that manufacturing data handling is not merely a storage problem, but a multi-layer systems problem spanning acquisition, communication, processing, storage, and downstream delivery across heterogeneous sources \cite{ismail2019manufacturing, odonovan2015industrial}.
 
@@ -169,6 +173,7 @@ Within this stream, two themes are especially prominent. First, many studies add
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Lifecycle Connectivity}
+\label{sec:lifecycle_connectivity}
 
 Another important line of research treats manufacturing data not as stage-local records, but as lifecycle-wide resources. From this perspective, the value of manufacturing data depends on whether information can remain linked, contextualized, and reusable across design, production, inspection, operation, maintenance, and end-of-life stages \cite{ren2019bigdata, tao2018datadriven, bernstein2018contextualising, hedberg2017lift}. This perspective shifts attention away from isolated data handling and toward continuity of meaning and usability across lifecycle transitions.
 
@@ -176,6 +181,7 @@ The concept of the digital thread has become the clearest expression of this per
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{SME Deployment}
+\label{sec:sme_deployment}
 
 The SME literature makes those deployment constraints explicit. Studies on smart manufacturing adoption in SMEs consistently show that these environments differ substantially from idealized smart factory assumptions: legacy equipment, fragmented systems, uneven interfaces, limited digital infrastructure, restricted investment capacity, and uneven technical expertise are common \cite{mittal2018maturity, mittal2020adoption, ghobakhloo2019adoption, krishnan2024challenges}. In this sense, SMEs should not be viewed simply as smaller versions of large factories, but as constrained deployment settings in which the assumptions of digitally mature architectures are most directly challenged.
 
@@ -184,11 +190,13 @@ These constraints are both technical and operational. Brownfield dependence ofte
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Problem Analysis}
+\label{sec:problem_analysis}
 
 This section analyzes the data basis of smart manufacturing as an operational pipeline and examines how constrained SME factory conditions introduce structural fragility across that pipeline. Rather than merely describing deployment difficulty, it identifies how lifecycle-wide constraints converge into a small set of recurring operational risks. In this way, the section defines the problem structure of operational data foundations under constrained deployment conditions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{General Data Pipeline Lifecycle}
+\label{sec:data_lifecycle}
 
 \begin{figure}
     \centering
@@ -216,6 +224,7 @@ This lifecycle is analytically useful because it makes visible the full path thr
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{SME Constraints}
+\label{sec:sme_constraints}
 
 \begin{figure}
     \centering
@@ -240,6 +249,7 @@ Taken together, these observations show that the core problem in constrained SME
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Operational Risks}
+\label{sec:operational_risks}
 
 The SME constraints discussed above do not remain isolated deployment difficulties. When mapped onto the general data pipeline lifecycle, they appear as recurring operational risks that determine whether manufacturing data can remain usable in practice. The issue, therefore, is not only how data move through the pipeline, but also what must be preserved for the resulting record to remain dependable under constrained real-world conditions.
 
@@ -262,6 +272,7 @@ Taken together, these risks show that a smart manufacturing data pipeline in con
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Operational Data Foundation Framework}
+\label{sec:odff}
 
 \begin{figure}
     \centering
@@ -274,6 +285,7 @@ To respond to these risks, this study proposes the \emph{Operational Data Founda
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Core Requirements}
+\label{sec:core_requirements}
 
 The framework begins by defining the \emph{core requirements}. These requirements are not merely desirable properties in a general sense, but the minimum lifecycle-wide guarantees needed for operational viability under constrained SME factory conditions. They provide the basis for the design principles and operational invariants developed in the following subsections.
 
@@ -295,6 +307,7 @@ Six core requirements are defined.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Design Principles}
+\label{sec:design_principles}
 
 The core requirements defined above specify what the operational data foundation must guarantee, but not how those guarantees should be realized in design. This subsection therefore presents the key \emph{design principles} that translate those requirements into a workable design logic for constrained SME factory conditions. Rather than prescribing specific technologies or implementation choices, these principles define the structural directions needed to sustain the required operational guarantees.
 
@@ -316,6 +329,7 @@ The core requirements defined above specify what the operational data foundation
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Operational Invariants}
+\label{sec:operational_invariants}
 
 The core requirements and design principles defined above specify what the operational data foundation must guarantee and how those guarantees should be realized. This subsection completes the framework by defining the \emph{operational invariants}, that is, the persistent conditions that should hold if the foundation is functioning as intended.
 
@@ -339,8 +353,9 @@ These invariants define the persistent conditions by which the framework can be 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Framework Synthesis}
+\label{sec:framework_synthesis}
 
-This subsection synthesizes the framework by reconnecting it to the problem space analyzed in Section~3. Section~3 showed how constrained SME factory conditions destabilize the general data pipeline lifecycle and generate recurring risks related to continuity, governance, diagnosability, operability, reprocessability, and evolvability. Sections~4.1--4.3 then translated those risks into core requirements, design principles, and operational invariants. The purpose of this subsection is to clarify how these layers are systematically linked to the underlying problem structure.
+This subsection synthesizes the framework by reconnecting it to the problem space analyzed in Section~\ref{sec:problem_analysis}. Section~\ref{sec:problem_analysis} showed how constrained SME factory conditions destabilize the general data pipeline lifecycle and generate recurring risks related to continuity, governance, diagnosability, operability, reprocessability, and evolvability. Sections~4.1--4.3 then translated those risks into core requirements, design principles, and operational invariants. The purpose of this subsection is to clarify how these layers are systematically linked to the underlying problem structure.
 
 Table~\ref{tab:constraint_design_logic} provides the first synthesis. It shows that constrained SME conditions are not merely a list of deployment difficulties, but recurring operational design problems that can be translated systematically. Each major constraint category gives rise to one or more operational risks; each risk is then expressed as a core requirement, translated into one or more design principles, and made assessable through corresponding invariants. In this way, the table shows how the framework is grounded in recurring structural problems in constrained SME manufacturing.
 
@@ -516,16 +531,18 @@ Monitoring and management
 
 One especially revealing example is the reinterpretation of the transmission stage. In generic pipeline discussions, transmission is often treated as a routine internal link between ingestion and subsequent processing. In constrained SME factory conditions, however, the path from field devices to gateways, edge systems, servers, and cloud systems is often exposed to intermittent connectivity, limited bandwidth, battery constraints, delayed recovery, and relay dependence. Transmission therefore becomes a distinct operational segment in which continuity and diagnosability are directly tested. For this reason, Table~\ref{tab:lifecycle_foundation_logic} assigns the transmission stage the added meanings of recoverable transfer and segment-aware discrepancy visibility, linking it to \emph{R1 Continuity}, \emph{R3 Diagnosability}, \emph{P1 source-near continuity}, \emph{P4 segment-based observability}, \emph{I1 Durable Capture}, and \emph{I4 Segment-Localizable Failure}.
 
-Taken together, Table~\ref{tab:constraint_design_logic} translates constrained SME conditions into operational design logic, while Table~\ref{tab:lifecycle_foundation_logic} shows how that logic refines the interpretation of the general data pipeline lifecycle under real manufacturing constraints. The result is a single analytical structure that connects the problem space, framework logic, and lifecycle interpretation. This synthesis also provides the basis for reading the field implementation in Section~5 and the evidence-based assessment in Section~6.
+Taken together, Table~\ref{tab:constraint_design_logic} translates constrained SME conditions into operational design logic, while Table~\ref{tab:lifecycle_foundation_logic} shows how that logic refines the interpretation of the general data pipeline lifecycle under real manufacturing constraints. The result is a single analytical structure that connects the problem space, framework logic, and lifecycle interpretation. This synthesis also provides the basis for reading the field implementation in Section~\ref{sec:field_implementation} and the evidence-based assessment in Section~\ref{sec:framework_evaluation}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Field Implementation}
+\label{sec:field_implementation}
 
 This section describes how the proposed framework was instantiated in a real SME manufacturing setting. It first introduces the deployment setting, then explains the field-side acquisition and edge architecture, the cloud-side processing path, and the resulting operational use.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Deployment Setting}
+\label{sec:deployment_setting}
 
 
 The empirical setting of this study was the Idang Food yakgwa plant, one of several OEM factories managed by ONGOING, an F\&B company operating across multiple production sites. The deployment was therefore designed not as an isolated factory pilot, but as the first field implementation of a broader architecture in which operational data from multiple factories could be collected locally and managed through a shared cloud-side structure. In this sense, Idang Food was selected not only as a practical implementation site, but also as a representative case through which this study examines how an operational data foundation can be established under constrained SME manufacturing conditions.
@@ -548,6 +565,7 @@ Accordingly, the role of Idang Food in this study was twofold. At the factory le
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Field Data Acquisition and Edge Architecture}
+\label{sec:field_acquisition_edge}
 
 
 The factory-side acquisition layer was implemented as an edge-centered intake stack that received field data within the plant, preserved them locally, and then forwarded them to the cloud event pipeline. Because the plant did not provide a uniform network-native source environment, and because stable plant-wide connectivity could not be assumed across distributed process areas, the architecture was organized around a local edge boundary rather than direct source-to-cloud transmission.
@@ -572,6 +590,7 @@ Once accepted and retained at the edge, the records were forwarded by producer s
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Cloud Processing and Event Flow}
+\label{sec:cloud_processing}
 
 
 On top of the field acquisition layer, the system implemented a cloud-side processing path that received raw events from factory edges, routed them through a brokered stream architecture, and transformed them into persistent and service-ready records. Multiple factory-originated event streams were forwarded to the AWS cloud and published into Kafka topics in the MSK cluster, where subsequent stages handled normalization, derivation, persistence, and operational consumption. Figure~\ref{fig:cloud_architecture} presents this deployment-level structure by showing how data from multiple factories converged within a shared AWS-based cloud environment and entered a common brokered processing path. In this way, the cloud layer served not as a single application endpoint, but as a staged processing structure connecting multi-factory intake to downstream use.
@@ -601,6 +620,7 @@ Taken together, the cloud-side processing path completed the second half of the 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Operational Use}
+\label{sec:operational_use}
 
 The implementation extended beyond data capture and cloud-side processing into an operational layer through which plant personnel could observe conditions and respond when necessary. This layer mattered because the system was not intended to remain merely a background pipeline. Instead, it was designed to make governed operational records directly usable in day-to-day manufacturing practice and thereby connect the data foundation to actual plant awareness and intervention.
 
@@ -615,14 +635,16 @@ The implemented layer also reached the point of machine-side intervention capabi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Evaluation of the Framework}
+\label{sec:framework_evaluation}
 
-This section evaluates whether the proposed framework functioned as an operational data foundation in a real manufacturing setting. Rather than emphasizing benchmark performance or algorithmic accuracy, the evaluation examines how the six framework requirements became visible in the implemented system and its operational history. Accordingly, Section~6.1 reviews requirement-wise evidence, and Section~6.2 presents a representative field case that illustrates more concretely how the framework became visible in actual operation.
+This section evaluates whether the proposed framework functioned as an operational data foundation in a real manufacturing setting. Rather than emphasizing benchmark performance or algorithmic accuracy, the evaluation examines how the six framework requirements became visible in the implemented system and its operational history. Accordingly, Section~\ref{sec:framework_compliance} reviews requirement-wise evidence, and Section~\ref{sec:lora_reliability} presents a representative field case that illustrates more concretely how the framework became visible in actual operation.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Framework Compliance}
+\label{sec:framework_compliance}
 
-This subsection examines framework compliance across the six core requirements defined in Section~4. Rather than reducing each requirement to a single metric, it considers multiple forms of representative evidence, summarizes them in Table~\ref{tab:requirement_compliance_snapshot}, and interprets their operational meaning.
+This subsection examines framework compliance across the six core requirements defined in Section~\ref{sec:odff}. Rather than reducing each requirement to a single metric, it considers multiple forms of representative evidence, summarizes them in Table~\ref{tab:requirement_compliance_snapshot}, and interprets their operational meaning.
 
 
 \begin{table}[H]
@@ -664,7 +686,7 @@ Evolvability
 
 \textbf{Governance} was evaluated in terms of whether heterogeneous field events were brought under a stable semantic discipline across collection, normalization, and storage. In the implemented system, source identity was governed through \texttt{source\_id}, while the parser stage fixed metric definitions, timestamp interpretation, and normalization rules before downstream use. The distinction among \texttt{event\_time}, \texttt{edge\_ingest\_time}, and \texttt{db\_ingest\_time} prevented ambiguity between occurrence time, pipeline reference time, and persistence time. In addition, the separation of raw-like event storage, source metadata, and derived KPI layers preserved a clear boundary between operational records and business-level abstraction. Taken together, these structures show that governance was achieved through controlled meaning, traceable identity, and stable interpretation across the pipeline.
 
-\textbf{Diagnosability} was assessed in terms of whether degradation remained a black-box symptom or became visible as a discrepancy localizable to specific lifecycle segments. Because gateway-visible counts, local edge logs, parser and consumer stages, and database persistence counts could be compared, the same symptom of ``too little data'' could be interpreted as different failure modes depending on where the discrepancy first appeared. In some periods, gateway-visible counts were already far below expectation, directing attention to upstream collection and communication. In other cases, the divergence widened only after gateway reception, indicating the need to inspect downstream processing or storage. This segment-wise visibility was especially important in the LoRa case discussed in Section~6.2, where the main source of degradation could be narrowed to the communication and configuration layer rather than misread as a parser or database issue.
+\textbf{Diagnosability} was assessed in terms of whether degradation remained a black-box symptom or became visible as a discrepancy localizable to specific lifecycle segments. Because gateway-visible counts, local edge logs, parser and consumer stages, and database persistence counts could be compared, the same symptom of ``too little data'' could be interpreted as different failure modes depending on where the discrepancy first appeared. In some periods, gateway-visible counts were already far below expectation, directing attention to upstream collection and communication. In other cases, the divergence widened only after gateway reception, indicating the need to inspect downstream processing or storage. This segment-wise visibility was especially important in the LoRa case discussed in Section~\ref{sec:lora_reliability}, where the main source of degradation could be narrowed to the communication and configuration layer rather than misread as a parser or database issue.
 
 \textbf{Operability} was reflected not simply in whether the system could be made to run, but in whether it could be deployed, inspected, adjusted, and maintained under limited staffing and maintenance capacity. The implemented structure separated field-side acquisition, gateway and network services, edge persistence, cloud-side stream processing, database storage, and dashboard and alert interfaces by function, thereby reducing unnecessary coupling among acquisition, normalization, persistence, derivation, and presentation. In practice, interventions such as rejoin handling, communication-parameter adjustment, logging verification, interval tuning, packet comparison, dashboard inspection, and alert-based response could be carried out at the relevant layer without redesigning the system as a whole. This indicates that the foundation remained operationally manageable as a field system rather than merely as a one-time prototype.
 
@@ -678,6 +700,7 @@ Taken together, the evidence above indicates that the proposed framework was rea
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Operational Case: LoRa Reliability Improvement}
+\label{sec:lora_reliability}
 
 
 A field data foundation does not remain operationally reliable simply because it has once been installed. In practice, reception quality, device condition, battery state, wireless configuration, and usage patterns continue to change over time. For this reason, the value of the proposed framework lies not in whether it delivered perfect behavior from the outset, but in whether emerging failures could be detected, localized, and corrected in an operationally meaningful way. This subsection presents a representative field case in which severe degradation in periodic uplink reception was diagnosed and improved within the implemented foundation.
@@ -810,17 +833,11 @@ The significance of this case extends beyond successful LoRa tuning. First, it s
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
+\label{sec:conclusion}
 
-This study argued that the main practical bottleneck of smart manufacturing in constrained SME factories lies not in downstream analytics or AI applications, but in establishing an operationally viable data foundation. In such environments, legacy equipment, fragmented systems, unstable field conditions, limited staffing, and cost sensitivity weaken the assumptions on which idealized smart-manufacturing architectures are often built. The central challenge is therefore not simply how to use more data, but how to build and sustain a data foundation that remains usable under real deployment conditions.
+This study addressed the practical bottleneck of smart manufacturing in constrained SME factories as an operational data foundation problem. To address this issue, it proposed the \emph{Operational Data Foundation Framework}, organized around six core requirements---continuity, governance, diagnosability, operability, reprocessability, and evolvability---together with their corresponding design principles and operational invariants. The framework was examined not only conceptually, but also through implementation and operation in a real SME food-manufacturing factory. The evaluation showed that the implemented system preserved controlled semantics, supported segment-wise observability, maintained replayable records, and remained manageable under constrained field conditions. The LoRa reception-instability case further demonstrated the framework's practical value by showing that degradation could be detected as a structured lifecycle discrepancy, localized to a specific segment, and improved through targeted intervention.
 
-To address this challenge, the study reinterpreted recurrent SME deployment conditions as lifecycle-wide constraints and operational risks, drawing on prior work on industrial data infrastructures, lifecycle connectivity, and SME digitalization. On that basis, it proposed the \emph{Operational Data Foundation Framework}, organized around six core requirements---continuity, governance, diagnosability, operability, reprocessability, and evolvability---together with their corresponding design principles and operational invariants. The contribution is therefore not only architectural, but also managerial, in that it provides a systematic basis for specifying and assessing what an operational data foundation must guarantee in constrained SME factory settings.
-
-The framework was examined not only conceptually, but also through implementation and operation in a real SME manufacturing factory. In that field setting, the study established source-side sensing, gateway and edge intake, cloud-side event processing, governed normalization, and operational dashboards and alerts as a connected foundation. The evaluation showed that the implemented system preserved controlled semantics, supported segment-wise observability, maintained replayable records, and remained manageable under constrained deployment conditions. The LoRa reception-instability case further demonstrated its practical value by showing that degradation could be detected as a structured lifecycle discrepancy, localized to a specific segment, and improved through targeted intervention.
-
-Rather than focusing on a single downstream application, this study formalized the operational data foundation that makes shop-floor data usable in practice. This matters because factories need more than data collection alone: they need records that allow operators and managers to monitor process conditions consistently, detect and localize abnormal situations, review prior conditions when quality issues arise, and extend the system without rebuilding its entire structure. In this sense, the proposed framework offers a reference design logic for making smart manufacturing more continuous and practically operable in constrained SME settings, while also providing a basis for future extension toward more human-centric and sustainability-oriented manufacturing.
-
-This study has several limitations. The framework was examined through a single SME food-manufacturing deployment, and its broader generalizability across multiple factories and more diverse industrial settings remains to be tested. In addition, although the implementation supported operational visibility, alerting, and machine-side intervention, the study did not directly evaluate large-scale multi-site deployment, fully automated replay workflows, or closed-loop control integration. Future work may therefore extend the framework through multi-factory replication, richer interoperability settings, automated replay-oriented pipelines, and tighter integration with analytics, digital twins, and CPPS-oriented control.
-
+The proposed framework therefore offers a reference design logic for making smart manufacturing more continuous and practically operable in constrained SME settings, while also providing a basis for future extension toward more human-centric and sustainability-oriented manufacturing. This study nevertheless has several limitations. The framework was examined through a single SME food-manufacturing deployment, and its broader generalizability across multiple factories and more diverse industrial settings remains to be tested. In addition, although the implementation supported operational visibility, alerting, and machine-side intervention, the study did not directly evaluate large-scale multi-site deployment, fully automated replay workflows, or closed-loop control integration. Future work may therefore extend the framework through multi-factory replication, richer interoperability settings, automated replay-oriented pipelines, and tighter integration with analytics, digital twins, and CPPS-oriented control.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \vspace{6pt} 
